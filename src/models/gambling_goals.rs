@@ -7,10 +7,10 @@ use super::super::goals::GOAL_REGISTRY;
 #[derive(FromRow)]
 pub struct GamblingGoalsRow {
     pub user_id: i64,
-    goal_id: String,
-    day: NaiveDate,
-    progress: i64,
-    target: i64,
+    pub goal_id: String,
+    pub day: NaiveDate,
+    pub progress: i64,
+    pub target: i64,
 }
 
 impl GamblingGoalsRow {

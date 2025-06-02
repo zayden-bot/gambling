@@ -25,9 +25,9 @@ pub trait GoalsManager<Db: Database> {
 
 #[derive(FromRow, Default)]
 pub struct GoalsRow {
-    coins: i64,
-    gems: i64,
-    level: i32,
+    pub coins: i64,
+    pub gems: i64,
+    pub level: i32,
 }
 
 impl Coins for GoalsRow {
