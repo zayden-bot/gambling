@@ -5,9 +5,9 @@ use serenity::all::UserId;
 
 use crate::{Coins, Gems, MaxBet};
 
-pub trait EventRow: Coins + Gems + MaxBet + Send {}
+pub trait EventRow: Coins + Gems + MaxBet + Send + Sync {}
 
-impl<T: Coins + Gems + MaxBet + Send> EventRow for T {}
+impl<T: Coins + Gems + MaxBet + Send + Sync> EventRow for T {}
 
 pub enum Event {
     GameEnd(GameEndEvent),
