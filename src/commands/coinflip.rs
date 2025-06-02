@@ -70,6 +70,8 @@ impl Commands {
             )
             .await?;
 
+        GameHandler::save(pool, row).await.unwrap();
+
         let (coin, title) = if winner {
             (prediction, "Coin Flip - You Won!")
         } else {
