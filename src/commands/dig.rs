@@ -160,7 +160,7 @@ impl Commands {
         });
 
         Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(&mut row, Event::Work)
+            .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
 
         DigHandler::save(pool, row).await.unwrap();

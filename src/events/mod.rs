@@ -13,13 +13,14 @@ pub enum Event {
     GameEnd(GameEndEvent),
     ShopPurchase(ShopPurchaseEvent),
     Send(SendEvent),
-    Work,
+    Work(UserId),
 }
 
 impl Event {
     pub fn user_id(&self) -> UserId {
         match self {
             Self::GameEnd(event) => event.user_id,
+            Self::Work(id) => *id,
             _ => todo!(),
         }
     }

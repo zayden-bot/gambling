@@ -166,7 +166,7 @@ const WORK: GoalDefinition = GoalDefinition::new("work")
     .set_target(|_| rand::random_range(2..=5))
     .set_description(|t| format!("Work or Dig {t}x times"))
     .set_update_fn(|goal, event| {
-        let Event::Work = event else {
+        let Event::Work(_) = event else {
             return false;
         };
 
