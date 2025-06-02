@@ -7,7 +7,7 @@ use serenity::all::{
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 
 use crate::{
-    Coins, Error, FormatNum, GoalsManager, Result, START_AMOUNT,
+    Coins, Error, FormatNum, Gems, GoalsManager, MaxBet, Result, START_AMOUNT,
     events::{Dispatch, Event, SendEvent},
 };
 
@@ -35,7 +35,10 @@ pub trait GiftManager<Db: Database> {
 #[derive(FromRow)]
 pub struct SenderRow {
     pub id: i64,
-    gift: NaiveDate,
+    pub coins: i64,
+    pub gems: i64,
+    pub gift: NaiveDate,
+    pub level: i32,
 }
 
 impl SenderRow {
@@ -44,15 +47,44 @@ impl SenderRow {
 
         Self {
             id: id.get() as i64,
+            coins: 0,
+            gems: 0,
             gift: NaiveDate::default(),
+            level: 0,
         }
+    }
+}
+
+impl Coins for SenderRow {
+    fn coins(&self) -> i64 {
+        self.coins
+    }
+
+    fn coins_mut(&mut self) -> &mut i64 {
+        &mut self.coins
+    }
+}
+
+impl Gems for SenderRow {
+    fn gems(&self) -> i64 {
+        self.gems
+    }
+
+    fn gems_mut(&mut self) -> &mut i64 {
+        &mut self.gems
+    }
+}
+
+impl MaxBet for SenderRow {
+    fn level(&self) -> i32 {
+        self.level
     }
 }
 
 #[derive(FromRow)]
 pub struct RecipientRow {
     pub id: i64,
-    coins: i64,
+    pub coins: i64,
 }
 
 impl RecipientRow {
@@ -124,7 +156,7 @@ impl Commands {
         *recipient_row.coins_mut() += GIFT_AMOUNT;
 
         Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(Event::Send(SendEvent::new(GIFT_AMOUNT)))
+            .fire(&mut user_row, Event::Send(SendEvent::new(GIFT_AMOUNT)))
             .await?;
 
         let embed = CreateEmbed::new()

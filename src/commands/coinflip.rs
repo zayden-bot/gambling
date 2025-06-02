@@ -1,87 +1,27 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
+    CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
-use sqlx::any::AnyQueryResult;
-use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
 use zayden_core::parse_options;
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
-    COIN, Coins, EffectsManager, FormatNum, Game, GoalsManager, MaxBet, Result, TAILS, VerifyBet,
+    COIN, Coins, EffectsManager, FormatNum, Game, GameManager, GameRow, GoalsManager, Result,
+    TAILS, VerifyBet,
 };
 
 use super::Commands;
-
-#[async_trait]
-pub trait CoinflipManager<Db: Database> {
-    async fn row(
-        pool: &Pool<Db>,
-        id: impl Into<UserId> + Send,
-    ) -> sqlx::Result<Option<CoinflipRow>>;
-
-    async fn save(pool: &Pool<Db>, row: CoinflipRow) -> sqlx::Result<AnyQueryResult>;
-}
-
-#[derive(FromRow)]
-pub struct CoinflipRow {
-    pub id: i64,
-    pub coins: i64,
-    pub game: NaiveDateTime,
-    pub level: i32,
-}
-
-impl CoinflipRow {
-    pub fn new(id: impl Into<UserId>) -> Self {
-        let id = id.into();
-
-        Self {
-            id: id.get() as i64,
-            coins: 0,
-            game: NaiveDateTime::default(),
-            level: 0,
-        }
-    }
-}
-
-impl Coins for CoinflipRow {
-    fn coins(&self) -> i64 {
-        self.coins
-    }
-
-    fn coins_mut(&mut self) -> &mut i64 {
-        &mut self.coins
-    }
-}
-
-impl Game for CoinflipRow {
-    fn game(&self) -> chrono::NaiveDateTime {
-        self.game
-    }
-
-    fn update_game(&mut self) {
-        self.game = Utc::now().naive_utc()
-    }
-}
-
-impl MaxBet for CoinflipRow {
-    fn level(&self) -> i32 {
-        self.level
-    }
-}
 
 impl Commands {
     pub async fn coinflip<
         Db: Database,
         GoalsHandler: GoalsManager<Db>,
         EffectsHandler: EffectsManager<Db> + Send,
-        CoinflipHandler: CoinflipManager<Db>,
+        GameHandler: GameManager<Db>,
     >(
         ctx: &Context,
         interaction: &CommandInteraction,
@@ -101,9 +41,9 @@ impl Commands {
             unreachable!("bet is required")
         };
 
-        let mut row = CoinflipHandler::row(pool, interaction.user.id)
+        let mut row = GameHandler::row(pool, interaction.user.id)
             .await?
-            .unwrap_or_else(|| CoinflipRow::new(interaction.user.id));
+            .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
         row.verify_cooldown()?;
         row.verify_bet(bet)?;
@@ -124,7 +64,10 @@ impl Commands {
         let coins = row.coins();
 
         Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(Event::GameEnd(GameEndEvent::new("coinflip", payout)))
+            .fire(
+                &mut row,
+                Event::GameEnd(GameEndEvent::new("coinflip", interaction.user.id, payout)),
+            )
             .await?;
 
         let (coin, title) = if winner {

@@ -3,7 +3,8 @@ use sqlx::{Database, Pool};
 
 use crate::GamblingGoalsRow;
 use crate::GoalsManager;
-use crate::events::{Event, EventRow};
+use crate::events::Event;
+use crate::events::EventRow;
 
 use super::GOAL_REGISTRY;
 
@@ -51,12 +52,12 @@ impl GoalHandler {
 
     pub async fn process_goals<Db: Database, Manager: GoalsManager<Db>>(
         pool: &Pool<Db>,
-        mut event: Event,
+        row: &mut dyn EventRow,
+        event: Event,
     ) -> sqlx::Result<Event> {
         let user_id = event.user_id();
 
-        let mut all_goals =
-            Self::get_user_progress::<Db, Manager>(pool, user_id, event.row()).await?;
+        let mut all_goals = Self::get_user_progress::<Db, Manager>(pool, user_id, row).await?;
 
         let changed = all_goals
             .iter_mut()
@@ -79,11 +80,11 @@ impl GoalHandler {
         changed
             .iter()
             .filter(|goal| goal.completed())
-            .for_each(|_| event.row_mut().add_coins(5_000));
+            .for_each(|_| row.add_coins(5_000));
 
         if !changed.is_empty() {
             if all_goals.iter().all(|row| row.completed()) {
-                event.row_mut().add_gems(1);
+                row.add_gems(1);
             }
 
             Manager::update(pool, &all_goals).await.unwrap();

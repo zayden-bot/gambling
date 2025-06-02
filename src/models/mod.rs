@@ -9,6 +9,7 @@ mod gambling_goals;
 // mod gambling_inventory;
 // mod gambling_level;
 // mod gambling_profile;
+mod game_row;
 
 // pub use gambling::{GamblingRow, GamblingTable};
 pub use gambling_effects::{EffectsManager, EffectsRow};
@@ -18,6 +19,7 @@ pub use gambling_effects::{EffectsManager, EffectsRow};
 // pub use gambling_profile::{GamblingItem, GamblingProfile};
 pub use gambling_goals::GamblingGoalsRow;
 pub use gambling_item::GamblingItem;
+pub use game_row::{GameManager, GameRow};
 
 use crate::{Error, FormatNum, Result, shop::ShopCurrency};
 

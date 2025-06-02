@@ -12,7 +12,7 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 
 use crate::events::{Dispatch, Event};
 use crate::shop::ShopCurrency;
-use crate::{GoalsManager, Result, Work};
+use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Work};
 
 use super::Commands;
 
@@ -47,15 +47,18 @@ pub trait DigManager<Db: Database> {
 #[derive(FromRow)]
 pub struct DigRow {
     pub id: i64,
-    work: NaiveDateTime,
-    miners: i64,
-    coal: i64,
-    iron: i64,
-    gold: i64,
-    redstone: i64,
-    lapis: i64,
-    diamonds: i64,
-    emeralds: i64,
+    pub coins: i64,
+    pub gems: i64,
+    pub work: NaiveDateTime,
+    pub level: i32,
+    pub miners: i64,
+    pub coal: i64,
+    pub iron: i64,
+    pub gold: i64,
+    pub redstone: i64,
+    pub lapis: i64,
+    pub diamonds: i64,
+    pub emeralds: i64,
 }
 
 impl DigRow {
@@ -64,7 +67,10 @@ impl DigRow {
 
         Self {
             id: id.get() as i64,
+            coins: 0,
+            gems: 0,
             work: NaiveDateTime::default(),
+            level: 0,
             miners: 0,
             coal: 0,
             iron: 0,
@@ -77,9 +83,35 @@ impl DigRow {
     }
 }
 
+impl Coins for DigRow {
+    fn coins(&self) -> i64 {
+        self.coins
+    }
+
+    fn coins_mut(&mut self) -> &mut i64 {
+        &mut self.coins
+    }
+}
+
+impl Gems for DigRow {
+    fn gems(&self) -> i64 {
+        self.gems
+    }
+
+    fn gems_mut(&mut self) -> &mut i64 {
+        &mut self.gems
+    }
+}
+
 impl Work for DigRow {
     fn work(&self) -> chrono::NaiveDateTime {
         self.work
+    }
+}
+
+impl MaxBet for DigRow {
+    fn level(&self) -> i32 {
+        self.level
     }
 }
 
@@ -128,7 +160,7 @@ impl Commands {
         });
 
         Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(Event::Work)
+            .fire(&mut row, Event::Work)
             .await?;
 
         DigHandler::save(pool, row).await.unwrap();

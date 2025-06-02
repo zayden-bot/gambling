@@ -9,12 +9,13 @@ use zayden_core::parse_options;
 
 use crate::events::{Dispatch, Event, SendEvent};
 use crate::{
-    COIN, Coins, Commands, Error, FormatNum, GoalsManager, MaxBet, Result, ShopCurrency,
+    COIN, Coins, Commands, Error, FormatNum, Gems, GoalsManager, MaxBet, Result, ShopCurrency,
 };
 
 pub struct SendRow {
     pub id: i64,
     coins: i64,
+    gems: i64,
     level: i32,
 }
 
@@ -25,6 +26,7 @@ impl SendRow {
         Self {
             id: id.get() as i64,
             coins: 0,
+            gems: 0,
             level: 0,
         }
     }
@@ -37,6 +39,16 @@ impl Coins for SendRow {
 
     fn coins_mut(&mut self) -> &mut i64 {
         &mut self.coins
+    }
+}
+
+impl Gems for SendRow {
+    fn gems(&self) -> i64 {
+        self.gems
+    }
+
+    fn gems_mut(&mut self) -> &mut i64 {
+        &mut self.gems
     }
 }
 
@@ -107,7 +119,7 @@ impl Commands {
         *recipient_row.coins_mut() += amount;
 
         Dispatch::<Db, GoalHandler>::new(pool)
-            .fire(Event::Send(SendEvent::new(amount)))
+            .fire(&mut user_row, Event::Send(SendEvent::new(amount)))
             .await
             .unwrap();
 

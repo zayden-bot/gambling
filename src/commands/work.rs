@@ -9,7 +9,7 @@ use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
 
 use crate::events::{Dispatch, Event};
-use crate::{COIN, Coins, Gems, GoalsManager, Result, Work};
+use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Work};
 
 use super::Commands;
 
@@ -19,6 +19,7 @@ pub struct WorkRow {
     pub coins: i64,
     pub gems: i64,
     pub work: NaiveDateTime,
+    pub level: i32,
 }
 
 impl WorkRow {
@@ -30,6 +31,7 @@ impl WorkRow {
             coins: 0,
             gems: 0,
             work: NaiveDateTime::default(),
+            level: 0,
         }
     }
 }
@@ -57,6 +59,12 @@ impl Gems for WorkRow {
 impl Work for WorkRow {
     fn work(&self) -> NaiveDateTime {
         self.work
+    }
+}
+
+impl MaxBet for WorkRow {
+    fn level(&self) -> i32 {
+        self.level
     }
 }
 
@@ -95,7 +103,7 @@ impl Commands {
         let coins = row.coins_str();
 
         Dispatch::<Db, GoalHandler>::new(pool)
-            .fire(Event::Work)
+            .fire(&mut row, Event::Work)
             .await?;
 
         WorkHandler::save(pool, row).await.unwrap();

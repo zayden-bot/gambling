@@ -6,8 +6,8 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 use zayden_core::parse_options;
 
 use crate::{
-    Coins, Error, Gems, GoalsManager, ItemInventory, Result, SHOP_ITEMS, SUPER_USER, ShopCurrency,
-    ShopItem, ShopPage,
+    Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, Result, SHOP_ITEMS, SUPER_USER,
+    ShopCurrency, ShopItem, ShopPage,
     events::{Dispatch, Event, ShopPurchaseEvent},
     models::{GamblingItem, MiningInventory},
 };
@@ -22,22 +22,23 @@ pub trait BuyManager<Db: Database> {
 #[derive(FromRow)]
 pub struct BuyRow {
     pub id: i64,
-    coins: i64,
-    gems: i64,
-    inventory: Vec<GamblingItem>,
-    miners: i64,
-    mines: i64,
-    land: i64,
-    countries: i64,
-    continents: i64,
-    planets: i64,
-    solar_systems: i64,
-    galaxies: i64,
-    universes: i64,
-    prestige: i64,
-    tech: i64,
-    utility: i64,
-    production: i64,
+    pub coins: i64,
+    pub gems: i64,
+    pub level: i32,
+    pub inventory: Vec<GamblingItem>,
+    pub miners: i64,
+    pub mines: i64,
+    pub land: i64,
+    pub countries: i64,
+    pub continents: i64,
+    pub planets: i64,
+    pub solar_systems: i64,
+    pub galaxies: i64,
+    pub universes: i64,
+    pub prestige: i64,
+    pub tech: i64,
+    pub utility: i64,
+    pub production: i64,
 }
 
 impl BuyRow {
@@ -48,6 +49,7 @@ impl BuyRow {
             id: id.get() as i64,
             coins: 0,
             gems: 0,
+            level: 0,
             inventory: Vec::new(),
             miners: 0,
             mines: 0,
@@ -174,6 +176,12 @@ impl MiningInventory for BuyRow {
     }
 }
 
+impl MaxBet for BuyRow {
+    fn level(&self) -> i32 {
+        self.level
+    }
+}
+
 pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyManager<Db>>(
     ctx: &Context,
     interaction: &CommandInteraction,
@@ -262,7 +270,10 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyMa
     };
 
     Dispatch::<Db, GoalsHandler>::new(pool)
-        .fire(Event::ShopPurchase(ShopPurchaseEvent::new(item.id)))
+        .fire(
+            &mut row,
+            Event::ShopPurchase(ShopPurchaseEvent::new(item.id)),
+        )
         .await?;
 
     BuyHandler::save(pool, row).await.unwrap();

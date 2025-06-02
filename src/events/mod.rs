@@ -18,27 +18,24 @@ pub enum Event {
 
 impl Event {
     pub fn user_id(&self) -> UserId {
-        todo!()
-    }
-
-    pub fn row(&self) -> &dyn EventRow {
-        todo!()
-    }
-
-    pub fn row_mut(&mut self) -> &mut dyn EventRow {
-        todo!()
+        match self {
+            Self::GameEnd(event) => event.user_id,
+            _ => todo!(),
+        }
     }
 }
 
 pub struct GameEndEvent {
     pub game_id: String,
+    pub user_id: UserId,
     pub payout: i64,
 }
 
 impl GameEndEvent {
-    pub fn new(id: impl Into<String>, payout: i64) -> Self {
+    pub fn new(id: impl Into<String>, user_id: impl Into<UserId>, payout: i64) -> Self {
         Self {
             game_id: id.into(),
+            user_id: user_id.into(),
             payout,
         }
     }
