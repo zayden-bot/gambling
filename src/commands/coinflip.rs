@@ -70,6 +70,8 @@ impl Commands {
             )
             .await?;
 
+        row.update_game();
+
         GameHandler::save(pool, row).await.unwrap();
 
         let (coin, title) = if winner {
