@@ -19,17 +19,17 @@ const CHANNEL_ID: ChannelId = ChannelId::new(1281440730820116582);
 #[async_trait]
 pub trait LottoManager<Db: Database> {
     async fn row(
-        tx: &mut Db::Connection,
+        conn: &mut Db::Connection,
         id: impl Into<UserId> + Send,
     ) -> sqlx::Result<Option<LottoRow>>;
 
-    async fn rows(tx: &mut Db::Connection) -> sqlx::Result<Vec<LottoRow>>;
+    async fn rows(conn: &mut Db::Connection) -> sqlx::Result<Vec<LottoRow>>;
 
-    async fn total_tickets(tx: &mut Db::Connection) -> sqlx::Result<i64>;
+    async fn total_tickets(conn: &mut Db::Connection) -> sqlx::Result<i64>;
 
-    async fn delete_tickets(tx: &mut Db::Connection) -> sqlx::Result<AnyQueryResult>;
+    async fn delete_tickets(conn: &mut Db::Connection) -> sqlx::Result<AnyQueryResult>;
 
-    async fn save(tx: &mut Db::Connection, row: LottoRow) -> sqlx::Result<AnyQueryResult>;
+    async fn save(conn: &mut Db::Connection, row: LottoRow) -> sqlx::Result<AnyQueryResult>;
 }
 
 #[derive(FromRow)]
