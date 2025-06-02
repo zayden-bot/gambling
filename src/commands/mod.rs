@@ -1,5 +1,3 @@
-use serenity::all::CreateCommand;
-
 pub mod coinflip;
 pub mod craft;
 pub mod daily;
@@ -21,34 +19,22 @@ pub mod work;
 pub struct Commands;
 pub use lotto::Lotto;
 
-pub fn register() -> Vec<CreateCommand> {
-    vec![
-        Commands::register_coinflip(),
-        Commands::register_goals(),
-        Commands::register_lotto(),
-        Commands::register_profile(),
-        Commands::register_send(),
-        Commands::register_send(),
-        Commands::register_shop(),
-        Commands::register_work(),
-    ]
-    /*
-    blackjack
-    connectfour
-    crash
-    dig
-    findthelady
-    gamble
-    poker
-    process?
-    race
-    roulette
-    sevens
-    slots
-    spin
+/*
+blackjack
+connectfour
+crash
+dig
+findthelady
+gamble
+poker
+process?
+race
+roulette
+sevens
+slots
+spin
 
-    oscar can we get bank robberies that get diff chances and payout depending on how many people and pot
+oscar can we get bank robberies that get diff chances and payout depending on how many people and pot
 
-    Should be possible honestly, a redeem on twitch to add coins here, just not the other way around
-    */
-}
+Should be possible honestly, a redeem on twitch to add coins here, just not the other way around
+*/
