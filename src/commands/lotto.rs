@@ -34,9 +34,9 @@ pub trait LottoManager<Db: Database> {
 
 #[derive(FromRow)]
 pub struct LottoRow {
-    id: i64,
-    coins: i64,
-    quantity: Option<i64>,
+    pub id: i64,
+    pub coins: i64,
+    pub quantity: Option<i64>,
 }
 
 impl LottoRow {
