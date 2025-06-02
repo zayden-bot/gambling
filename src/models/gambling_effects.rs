@@ -5,12 +5,6 @@ use sqlx::{Database, Pool, any::AnyQueryResult};
 
 use crate::shop::{SHOP_ITEMS, ShopItem};
 
-pub struct EffectsRow {
-    id: i32,
-    item_id: String,
-    expiry: Option<NaiveDateTime>,
-}
-
 #[async_trait]
 pub trait EffectsManager<Db: Database> {
     async fn get_effects(
@@ -45,4 +39,10 @@ pub trait EffectsManager<Db: Database> {
 
         payout
     }
+}
+
+pub struct EffectsRow {
+    pub id: i32,
+    pub item_id: String,
+    pub expiry: Option<NaiveDateTime>,
 }
