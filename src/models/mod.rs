@@ -54,6 +54,8 @@ pub trait Gems {
 pub trait Work {
     fn work(&self) -> NaiveDateTime;
 
+    fn update_work(&mut self);
+
     fn verify_work(&self) -> Result<()> {
         let now = Utc::now().naive_utc();
         let break_over = self.work() + Duration::minutes(10);

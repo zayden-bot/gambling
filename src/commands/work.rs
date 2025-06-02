@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Utc};
 use serenity::all::{
     Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
     UserId,
@@ -60,6 +60,10 @@ impl Work for WorkRow {
     fn work(&self) -> NaiveDateTime {
         self.work
     }
+
+    fn update_work(&mut self) {
+        self.work = Utc::now().naive_utc()
+    }
 }
 
 impl MaxBet for WorkRow {
@@ -105,6 +109,8 @@ impl Commands {
         Dispatch::<Db, GoalHandler>::new(pool)
             .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
+
+        row.update_work();
 
         WorkHandler::save(pool, row).await.unwrap();
 

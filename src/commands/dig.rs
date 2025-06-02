@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::LazyLock};
 
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Utc};
 use rand::rng;
 use rand_distr::{Binomial, Distribution};
 use serenity::all::{
@@ -107,6 +107,10 @@ impl Work for DigRow {
     fn work(&self) -> chrono::NaiveDateTime {
         self.work
     }
+
+    fn update_work(&mut self) {
+        self.work = Utc::now().naive_utc()
+    }
 }
 
 impl MaxBet for DigRow {
@@ -162,6 +166,8 @@ impl Commands {
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
+
+        row.update_work();
 
         DigHandler::save(pool, row).await.unwrap();
 
