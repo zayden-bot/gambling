@@ -32,9 +32,9 @@ pub trait CoinflipManager<Db: Database> {
 #[derive(FromRow)]
 pub struct CoinflipRow {
     pub id: i64,
-    coins: i64,
-    game: NaiveDateTime,
-    level: i32,
+    pub coins: i64,
+    pub game: NaiveDateTime,
+    pub level: i32,
 }
 
 impl CoinflipRow {
