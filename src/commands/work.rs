@@ -16,9 +16,9 @@ use super::Commands;
 #[derive(FromRow)]
 pub struct WorkRow {
     pub id: i64,
-    coins: i64,
-    gems: i64,
-    work: NaiveDateTime,
+    pub coins: i64,
+    pub gems: i64,
+    pub work: NaiveDateTime,
 }
 
 impl WorkRow {
