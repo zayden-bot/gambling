@@ -1,0 +1,156 @@
+use async_trait::async_trait;
+use levels::{LevelsRow, level_up_xp};
+use serenity::all::{
+    Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
+    CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
+};
+use sqlx::{Database, Pool};
+
+use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, Result, ShopItem};
+
+use super::Commands;
+
+#[async_trait]
+pub trait ProfileManager<Db: Database> {
+    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send)
+    -> sqlx::Result<Option<ProfileRow>>;
+}
+
+#[derive(Default)]
+pub struct ProfileRow {
+    coins: i64,
+    gems: i64,
+    inventory: Vec<GamblingItem>,
+    xp: i32,
+    level: i32,
+}
+
+impl Coins for ProfileRow {
+    fn coins(&self) -> i64 {
+        self.coins
+    }
+
+    fn coins_mut(&mut self) -> &mut i64 {
+        &mut self.coins
+    }
+}
+
+impl Gems for ProfileRow {
+    fn gems(&self) -> i64 {
+        self.gems
+    }
+
+    fn gems_mut(&mut self) -> &mut i64 {
+        &mut self.gems
+    }
+}
+
+impl ItemInventory for ProfileRow {
+    fn inventory(&self) -> &[GamblingItem] {
+        &self.inventory
+    }
+
+    fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
+        &mut self.inventory
+    }
+}
+
+impl LevelsRow for ProfileRow {
+    fn user_id(&self) -> UserId {
+        unimplemented!()
+    }
+
+    fn xp(&self) -> i32 {
+        self.xp
+    }
+
+    fn level(&self) -> i32 {
+        self.level
+    }
+
+    fn total_xp(&self) -> i64 {
+        unimplemented!()
+    }
+
+    fn message_count(&self) -> i64 {
+        unimplemented!()
+    }
+
+    fn last_xp(&self) -> chrono::NaiveDateTime {
+        unimplemented!()
+    }
+}
+
+impl From<ProfileRow> for CreateEmbed {
+    fn from(value: ProfileRow) -> Self {
+        let inventory = value.inventory();
+
+        let loot_str = if inventory.is_empty() {
+            String::from("You've got no loot, not even a 🥄")
+        } else {
+            inventory
+                .iter()
+                .map(|inv| (inv, ShopItem::from(inv)))
+                .map(|(inv, item)| format!("{} {} {}s", item.emoji(), inv.quantity, item.name))
+                .collect::<Vec<_>>()
+                .join("\n")
+        };
+
+        CreateEmbed::new()
+            .field(format!("Cash <:coin:{COIN}>"), value.coins_str(), false)
+            .field("Gems 💎", value.gems_str(), false)
+            .field(
+                format!("Level {}", value.level()),
+                format!("{} / {} xp", value.xp(), level_up_xp(value.level())),
+                false,
+            )
+            .field("Loot", loot_str, false)
+            .colour(Colour::TEAL)
+    }
+}
+
+impl Commands {
+    pub async fn profile<Db: Database, Manager: ProfileManager<Db>>(
+        ctx: &Context,
+        interaction: &CommandInteraction,
+        mut options: Vec<ResolvedOption<'_>>,
+        pool: &Pool<Db>,
+    ) -> Result<()> {
+        interaction.defer(ctx).await.unwrap();
+
+        let user = match options.pop() {
+            Some(option) => {
+                let ResolvedValue::User(user, _) = option.value else {
+                    unreachable!("value must be a user")
+                };
+                user
+            }
+            None => &interaction.user,
+        };
+
+        let row = Manager::row(pool, user.id).await?.unwrap_or_default();
+
+        let mut embed = CreateEmbed::from(row).title(user.display_name());
+
+        if let Some(avatar) = user.avatar_url() {
+            embed = embed.thumbnail(avatar);
+        }
+
+        interaction
+            .edit_response(ctx, EditInteractionResponse::new().embed(embed))
+            .await
+            .unwrap();
+
+        Ok(())
+    }
+
+    pub fn register_profile() -> CreateCommand {
+        CreateCommand::new("profile")
+            .description("Show your coins, level and items")
+            .add_option(CreateCommandOption::new(
+                CommandOptionType::User,
+                "user",
+                "The user's profile to show",
+            ))
+    }
+}

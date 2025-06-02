@@ -1,0 +1,16 @@
+[package]
+name = "gambling"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+zayden-core = { git = "https://github.com/zayden-bot/slash-command-core.git", branch = "master" }
+levels = { git = "https://github.com/zayden-bot/levels.git", branch = "main" }
+
+async-trait = { version = "*", default-features = false }
+chrono = { version = "*", default-features = false }
+futures = { version = "*", default-features = false, features = [] }
+rand = { version = "*", default-features = false, features = ["thread_rng"] }
+rand_distr = { version = "*", default-features = false }
+serenity = { version = "*", default-features = false, features = [] }
+sqlx = { version = "*", default-features = false, features = ["any", "macros"] }

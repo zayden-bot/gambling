@@ -1,0 +1,173 @@
+use std::{collections::HashMap, sync::LazyLock};
+
+use async_trait::async_trait;
+use chrono::NaiveDateTime;
+use rand::rng;
+use rand_distr::{Binomial, Distribution};
+use serenity::all::{
+    Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
+    UserId,
+};
+use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
+
+use crate::events::{Dispatch, Event};
+use crate::shop::ShopCurrency;
+use crate::{GoalsManager, Result, Work};
+
+use super::Commands;
+
+const CHUNK_BLOCKS: f64 = 16.0 * 16.0 * 123.0;
+const COAL_PER_CHUNK: f64 = 141.0;
+const IRON_PER_CHUNK: f64 = 77.0;
+const GOLD_PER_CHUNK: f64 = 8.3;
+const REDSTONE_PER_CHUNK: f64 = 7.8;
+const LAPIS_PER_CHUNK: f64 = 4.3;
+const DIAMOND_PER_CHUNK: f64 = 3.7;
+const EMERALDS_PER_CHUNK: f64 = 3.0;
+
+static CHANCES: LazyLock<HashMap<&str, f64>> = LazyLock::new(|| {
+    HashMap::from([
+        ("coal", (COAL_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("iron", (IRON_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("gold", (GOLD_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("redstone", (REDSTONE_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("lapis", (LAPIS_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("diamonds", (DIAMOND_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("emeralds", (EMERALDS_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+    ])
+});
+
+#[async_trait]
+pub trait DigManager<Db: Database> {
+    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<DigRow>>;
+
+    async fn save(pool: &Pool<Db>, row: DigRow) -> sqlx::Result<AnyQueryResult>;
+}
+
+#[derive(FromRow)]
+pub struct DigRow {
+    pub id: i64,
+    work: NaiveDateTime,
+    miners: i64,
+    coal: i64,
+    iron: i64,
+    gold: i64,
+    redstone: i64,
+    lapis: i64,
+    diamonds: i64,
+    emeralds: i64,
+}
+
+impl DigRow {
+    pub fn new(id: impl Into<UserId>) -> Self {
+        let id = id.into();
+
+        Self {
+            id: id.get() as i64,
+            work: NaiveDateTime::default(),
+            miners: 0,
+            coal: 0,
+            iron: 0,
+            gold: 0,
+            redstone: 0,
+            lapis: 0,
+            diamonds: 0,
+            emeralds: 0,
+        }
+    }
+}
+
+impl Work for DigRow {
+    fn work(&self) -> chrono::NaiveDateTime {
+        self.work
+    }
+}
+
+impl Commands {
+    pub async fn dig<Db: Database, GoalsHandler: GoalsManager<Db>, DigHandler: DigManager<Db>>(
+        ctx: &Context,
+        interaction: &CommandInteraction,
+        pool: &Pool<Db>,
+    ) -> Result<()> {
+        interaction.defer(ctx).await.unwrap();
+
+        let mut row = DigHandler::row(pool, interaction.user.id)
+            .await
+            .unwrap()
+            .unwrap_or_else(|| DigRow::new(interaction.user.id));
+
+        row.verify_work()?;
+
+        let mut resources = HashMap::from([
+            ("coal", 0),
+            ("iron", 0),
+            ("gold", 0),
+            ("redstone", 0),
+            ("lapis", 0),
+            ("diamonds", 0),
+            ("emeralds", 0),
+        ]);
+
+        let num_attempts = (row.miners as u64).saturating_add(10);
+
+        for (resource, chance) in CHANCES.iter() {
+            *resources.get_mut(resource).unwrap() += Binomial::new(num_attempts, *chance)
+                .unwrap()
+                .sample(&mut rng()) as i64;
+        }
+
+        resources.iter().for_each(|(&k, &v)| match k {
+            "coal" => row.coal += v,
+            "iron" => row.iron += v,
+            "gold" => row.gold += v,
+            "redstone" => row.redstone += v,
+            "lapis" => row.lapis += v,
+            "diamonds" => row.diamonds += v,
+            "emeralds" => row.emeralds += v,
+            s => unreachable!("Invalid resource: {s}"),
+        });
+
+        Dispatch::<Db, GoalsHandler>::new(pool)
+            .fire(Event::Work)
+            .await?;
+
+        DigHandler::save(pool, row).await.unwrap();
+
+        let embed = CreateEmbed::new()
+            .description(format!("You dug around in the mines and found:\n{}", {
+                let found = resources
+                    .drain()
+                    .filter(|(_, v)| *v > 0)
+                    .map(|(k, v)| match k {
+                        "coal" => (ShopCurrency::Coal, v, k),
+                        "iron" => (ShopCurrency::Iron, v, k),
+                        "gold" => (ShopCurrency::Gold, v, k),
+                        "redstone" => (ShopCurrency::Redstone, v, k),
+                        "lapis" => (ShopCurrency::Lapis, v, k),
+                        "diamonds" => (ShopCurrency::Diamonds, v, k),
+                        "emeralds" => (ShopCurrency::Emeralds, v, k),
+                        s => unreachable!("Invalid resource: {s}"),
+                    })
+                    .map(|(currency, amount, name)| format!("{currency} `{amount}` {name}",))
+                    .collect::<Vec<_>>();
+
+                if found.is_empty() {
+                    String::from("Just a whole lot of boring stone...")
+                } else {
+                    found.join("\n")
+                }
+            }))
+            .color(Colour::GOLD);
+
+        interaction
+            .edit_response(ctx, EditInteractionResponse::new().embed(embed))
+            .await
+            .unwrap();
+
+        Ok(())
+    }
+
+    pub fn register_dig() -> CreateCommand {
+        CreateCommand::new("dig").description("Dig in the mines to collect resources")
+    }
+}
