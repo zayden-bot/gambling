@@ -36,7 +36,7 @@ pub trait LottoManager<Db: Database> {
 pub struct LottoRow {
     id: i64,
     coins: i64,
-    quantity: i64,
+    quantity: Option<i64>,
 }
 
 impl LottoRow {
@@ -46,12 +46,16 @@ impl LottoRow {
         Self {
             id: id.get() as i64,
             coins: 0,
-            quantity: 0,
+            quantity: Some(0),
         }
     }
 
     fn user_id(&self) -> UserId {
         UserId::new(self.id as u64)
+    }
+
+    fn quantity(&self) -> i64 {
+        self.quantity.unwrap_or(0)
     }
 }
 
@@ -83,15 +87,15 @@ impl Lotto {
                 return Ok(());
             }
 
-            let total_tickets: i64 = rows.iter().map(|row| row.quantity).sum();
+            let total_tickets: i64 = rows.iter().map(|row| row.quantity()).sum();
             let jackpot = total_tickets * LOTTO_TICKET.coin_cost().unwrap();
 
-            let mut dist = WeightedIndex::new(rows.iter().map(|row| row.quantity)).unwrap();
+            let mut dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
 
             let winners = (0..expected_winners).map(|_| {
                 let index = dist.sample(&mut rng());
                 let winner = rows.remove(index);
-                dist = WeightedIndex::new(rows.iter().map(|row| row.quantity)).unwrap();
+                dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
                 winner
             });
 
@@ -157,20 +161,20 @@ impl Commands {
             .title(format!(
                 "<:coin:{COIN}> <:coin:{COIN}> Lottery!! <:coin:{COIN}> <:coin:{COIN}>"
             ))
-            .description(format!("Draws are at <t:{}:F>", timestamp))
+            .description(format!("Draws are at <t:{timestamp}:F>"))
             .field(
                 "Tickets Bought",
-                format!("{} {}", total_tickets, lotto_emoji),
+                format!("{} {lotto_emoji}", total_tickets.format()),
                 false,
             )
             .field(
                 "Jackpot Value",
-                format!("{} <:coin:{COIN}>", jackpot),
+                format!("{} <:coin:{COIN}>", jackpot.format()),
                 false,
             )
             .field(
                 "Your Tickets",
-                format!("{} {}", row.quantity, lotto_emoji),
+                format!("{} {lotto_emoji}", row.quantity().format()),
                 false,
             );
 
