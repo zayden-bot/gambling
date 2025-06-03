@@ -14,7 +14,16 @@ pub trait MineManager<Db: Database> {
 
 #[derive(Default, FromRow)]
 pub struct MineRow {
-    miners: i64,
+    pub miners: i64,
+    pub mine: i64,
+    pub land: i64,
+    pub countries: i64,
+    pub continents: i64,
+    pub planets: i64,
+    pub solar_systems: i64,
+    pub galaxies: i64,
+    pub universes: i64,
+    pub prestige: i64,
 }
 
 impl Mining for MineRow {
@@ -23,39 +32,39 @@ impl Mining for MineRow {
     }
 
     fn mines(&self) -> i64 {
-        todo!()
+        self.mine
     }
 
     fn land(&self) -> i64 {
-        todo!()
+        self.land
     }
 
     fn countries(&self) -> i64 {
-        todo!()
+        self.countries
     }
 
     fn continents(&self) -> i64 {
-        todo!()
+        self.continents
     }
 
     fn planets(&self) -> i64 {
-        todo!()
+        self.planets
     }
 
     fn solar_systems(&self) -> i64 {
-        todo!()
+        self.solar_systems
     }
 
     fn galaxies(&self) -> i64 {
-        todo!()
+        self.galaxies
     }
 
     fn universes(&self) -> i64 {
-        todo!()
+        self.universes
     }
 
     fn prestige(&self) -> i64 {
-        todo!()
+        self.prestige
     }
 
     fn tech(&self) -> i64 {
