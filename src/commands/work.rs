@@ -8,7 +8,7 @@ use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
 
 use crate::events::{Dispatch, Event};
-use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Stamina};
+use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Stamina, StaminaManager};
 
 use super::Commands;
 
@@ -79,7 +79,12 @@ pub trait WorkManager<Db: Database> {
 }
 
 impl Commands {
-    pub async fn work<Db: Database, GoalHandler: GoalsManager<Db>, WorkHandler: WorkManager<Db>>(
+    pub async fn work<
+        Db: Database,
+        StaminaHandler: StaminaManager<Db>,
+        GoalHandler: GoalsManager<Db>,
+        WorkHandler: WorkManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
@@ -91,7 +96,7 @@ impl Commands {
             None => WorkRow::new(interaction.user.id),
         };
 
-        row.verify_work()?;
+        row.verify_work::<Db, StaminaHandler>()?;
 
         let amount = rand::random_range(100..=500);
         *row.coins_mut() += amount;

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{Duration, NaiveDateTime, Timelike, Utc};
+use chrono::{Duration, NaiveDateTime, Utc};
 
 mod gambling_effects;
 mod gambling_goals;
@@ -11,8 +11,9 @@ pub use gambling_effects::{EffectsManager, EffectsRow};
 pub use gambling_goals::GamblingGoalsRow;
 pub use gambling_item::GamblingItem;
 pub use game_row::{GameManager, GameRow};
+use sqlx::Database;
 
-use crate::{Error, FormatNum, Result, shop::ShopCurrency};
+use crate::{Error, FormatNum, Result, StaminaCron, StaminaManager, shop::ShopCurrency};
 
 pub trait Coins {
     fn coins(&self) -> i64;
@@ -51,24 +52,16 @@ pub trait Stamina {
         *self.stamina_mut() -= 1
     }
 
-    fn verify_work(&self) -> Result<()> {
+    fn verify_work<Db: Database, Manager: StaminaManager<Db>>(&self) -> Result<()> {
         if self.stamina() <= 0 {
-            let now = Utc::now();
+            let next_timestamp = StaminaCron::cron_job::<Db, Manager>()
+                .schedule
+                .upcoming(chrono::Utc)
+                .next()
+                .unwrap_or_default()
+                .timestamp();
 
-            let mut target_minute_value = ((now.minute() / 10) + 1) * 10;
-            if target_minute_value == 60 {
-                target_minute_value = 0;
-            }
-
-            let next_timestamp = now
-                .with_minute(target_minute_value)
-                .unwrap()
-                .with_second(0)
-                .unwrap()
-                .with_nanosecond(0)
-                .unwrap();
-
-            return Err(Error::WorkClaimed(next_timestamp.timestamp()));
+            return Err(Error::WorkClaimed(next_timestamp));
         }
 
         Ok(())

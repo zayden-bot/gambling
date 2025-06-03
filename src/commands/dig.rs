@@ -11,7 +11,7 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 
 use crate::events::{Dispatch, Event};
 use crate::shop::ShopCurrency;
-use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Stamina};
+use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Stamina, StaminaManager};
 
 use super::Commands;
 
@@ -119,7 +119,12 @@ impl MaxBet for DigRow {
 }
 
 impl Commands {
-    pub async fn dig<Db: Database, GoalsHandler: GoalsManager<Db>, DigHandler: DigManager<Db>>(
+    pub async fn dig<
+        Db: Database,
+        StaminaHandler: StaminaManager<Db>,
+        GoalsHandler: GoalsManager<Db>,
+        DigHandler: DigManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
@@ -131,7 +136,7 @@ impl Commands {
             .unwrap()
             .unwrap_or_else(|| DigRow::new(interaction.user.id));
 
-        row.verify_work()?;
+        row.verify_work::<Db, StaminaHandler>()?;
 
         let mut resources = HashMap::from([
             ("coal", 0),
