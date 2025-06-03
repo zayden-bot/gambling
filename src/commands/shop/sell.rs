@@ -4,6 +4,7 @@ use serenity::all::{
 };
 use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
+use sqlx::types::Json;
 use sqlx::{Database, Pool};
 use zayden_core::parse_options;
 
@@ -22,7 +23,7 @@ pub trait SellManager<Db: Database> {
 pub struct SellRow {
     pub id: i64,
     coins: i64,
-    inventory: Vec<GamblingItem>,
+    pub inventory: Json<Vec<GamblingItem>>,
 }
 
 impl SellRow {
@@ -32,7 +33,7 @@ impl SellRow {
         Self {
             id: id.get() as i64,
             coins: 0,
-            inventory: Vec::new(),
+            inventory: Json(Vec::new()),
         }
     }
 }

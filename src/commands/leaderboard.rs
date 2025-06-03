@@ -8,7 +8,7 @@ use serenity::all::{
     CreateInteractionResponseMessage, EditInteractionResponse, Mentionable, Message,
     ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::{Database, Pool, prelude::FromRow};
+use sqlx::{Database, Pool, prelude::FromRow, types::Json};
 use zayden_core::cache::GuildMembersCache;
 
 use crate::{
@@ -80,7 +80,7 @@ pub trait LeaderboardManager<Db: Database> {
 pub struct NetWorthRow {
     pub id: i64,
     pub coins: i64,
-    pub inventory: Vec<GamblingItem>,
+    pub inventory: Json<Vec<GamblingItem>>,
 }
 
 impl Coins for NetWorthRow {

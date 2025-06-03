@@ -7,7 +7,7 @@ use serenity::all::{
     CreateInteractionResponse, CreateInteractionResponseMessage, EditInteractionResponse,
     ReactionType, UserId,
 };
-use sqlx::{Database, FromRow, Pool, any::AnyQueryResult};
+use sqlx::{Database, FromRow, Pool, any::AnyQueryResult, types::Json};
 
 use crate::{
     COIN, Coins, GamblingItem, ItemInventory, Result, SHOP_ITEMS, ShopPage, shop::SALES_TAX,
@@ -23,8 +23,8 @@ pub trait ListManager<Db: Database> {
 #[derive(FromRow)]
 pub struct ListRow {
     pub id: i64,
-    coins: i64,
-    inventory: Vec<GamblingItem>,
+    pub coins: i64,
+    pub inventory: Json<Vec<GamblingItem>>,
 }
 
 impl Coins for ListRow {
@@ -44,7 +44,7 @@ impl ListRow {
         Self {
             id: id.get() as i64,
             coins: 0,
-            inventory: Vec::new(),
+            inventory: Json(Vec::new()),
         }
     }
 }

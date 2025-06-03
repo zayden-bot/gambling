@@ -5,6 +5,7 @@ use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     CreateEmbed, EditInteractionResponse, Mentionable, ResolvedOption, ResolvedValue, UserId,
 };
+use sqlx::types::Json;
 use sqlx::{Database, Pool, prelude::FromRow};
 use zayden_core::parse_options;
 
@@ -59,19 +60,19 @@ pub trait InventoryManager<Db: Database> {
 
 #[derive(Default, FromRow)]
 pub struct InventoryRow {
-    coins: i64,
-    gems: i64,
-    inventory: Vec<GamblingItem>,
-    tech: i64,
-    utility: i64,
-    production: i64,
-    coal: i64,
-    iron: i64,
-    gold: i64,
-    redstone: i64,
-    lapis: i64,
-    diamonds: i64,
-    emeralds: i64,
+    pub coins: i64,
+    pub gems: i64,
+    pub inventory: Json<Vec<GamblingItem>>,
+    pub tech: i64,
+    pub utility: i64,
+    pub production: i64,
+    pub coal: i64,
+    pub iron: i64,
+    pub gold: i64,
+    pub redstone: i64,
+    pub lapis: i64,
+    pub diamonds: i64,
+    pub emeralds: i64,
 }
 
 impl Coins for InventoryRow {

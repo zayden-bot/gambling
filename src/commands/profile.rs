@@ -4,7 +4,7 @@ use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::{Database, Pool};
+use sqlx::{Database, Pool, types::Json};
 
 use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, Result, ShopItem};
 
@@ -20,7 +20,7 @@ pub trait ProfileManager<Db: Database> {
 pub struct ProfileRow {
     coins: i64,
     gems: i64,
-    inventory: Vec<GamblingItem>,
+    inventory: Json<Vec<GamblingItem>>,
     xp: i32,
     level: i32,
 }
