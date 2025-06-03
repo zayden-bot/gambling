@@ -22,7 +22,7 @@ pub trait SellManager<Db: Database> {
 #[derive(FromRow)]
 pub struct SellRow {
     pub id: i64,
-    coins: i64,
+    pub coins: i64,
     pub inventory: Option<Json<Vec<GamblingItem>>>,
 }
 

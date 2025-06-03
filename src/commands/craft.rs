@@ -22,16 +22,16 @@ pub trait CraftManager<Db: Database> {
 
 #[derive(FromRow)]
 pub struct CraftRow {
-    coal: i64,
-    iron: i64,
-    gold: i64,
-    redstone: i64,
-    lapis: i64,
-    diamonds: i64,
-    emeralds: i64,
-    tech: i64,
-    utility: i64,
-    production: i64,
+    pub coal: i64,
+    pub iron: i64,
+    pub gold: i64,
+    pub redstone: i64,
+    pub lapis: i64,
+    pub diamonds: i64,
+    pub emeralds: i64,
+    pub tech: i64,
+    pub utility: i64,
+    pub production: i64,
 }
 
 impl Commands {

@@ -14,9 +14,9 @@ use crate::{
 
 pub struct SendRow {
     pub id: i64,
-    coins: i64,
-    gems: i64,
-    level: i32,
+    pub coins: i64,
+    pub gems: i64,
+    pub level: i32,
 }
 
 impl SendRow {
