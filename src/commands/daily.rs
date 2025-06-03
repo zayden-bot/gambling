@@ -20,8 +20,8 @@ pub trait DailyManager<Db: Database> {
 #[derive(FromRow)]
 pub struct DailyRow {
     pub id: i64,
-    coins: i64,
-    daily: NaiveDate,
+    pub coins: i64,
+    pub daily: NaiveDate,
 }
 
 impl DailyRow {
