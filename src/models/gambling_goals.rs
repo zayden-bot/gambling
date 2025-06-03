@@ -69,8 +69,6 @@ impl GamblingGoalsRow {
         let progress_str = self.progress.format();
         let target_str = self.target.format();
 
-        println!("{:?}", progress_str);
-
         format!("**{title}**\nProgress: `{progress_str}/{target_str}`")
     }
 }
