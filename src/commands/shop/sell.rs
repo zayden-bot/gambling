@@ -23,7 +23,7 @@ pub trait SellManager<Db: Database> {
 pub struct SellRow {
     pub id: i64,
     coins: i64,
-    pub inventory: Json<Vec<GamblingItem>>,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
 }
 
 impl SellRow {
@@ -33,7 +33,7 @@ impl SellRow {
         Self {
             id: id.get() as i64,
             coins: 0,
-            inventory: Json(Vec::new()),
+            inventory: Some(Json(Vec::new())),
         }
     }
 }
@@ -50,11 +50,14 @@ impl Coins for SellRow {
 
 impl ItemInventory for SellRow {
     fn inventory(&self) -> &[GamblingItem] {
-        &self.inventory
+        match self.inventory.as_ref() {
+            Some(vec_ref) => &vec_ref.0,
+            None => &[],
+        }
     }
 
     fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        &mut self.inventory
+        self.inventory.get_or_insert_with(|| Json(Vec::new()))
     }
 }
 

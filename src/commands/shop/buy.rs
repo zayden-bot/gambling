@@ -25,7 +25,7 @@ pub struct BuyRow {
     pub coins: i64,
     pub gems: i64,
     pub level: i32,
-    pub inventory: Json<Vec<GamblingItem>>,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
     pub miners: i64,
     pub mines: i64,
     pub land: i64,
@@ -50,7 +50,7 @@ impl BuyRow {
             coins: 0,
             gems: 0,
             level: 0,
-            inventory: Json(Vec::new()),
+            inventory: Some(Json(Vec::new())),
             miners: 0,
             mines: 0,
             land: 0,
@@ -90,11 +90,14 @@ impl Gems for BuyRow {
 
 impl ItemInventory for BuyRow {
     fn inventory(&self) -> &[GamblingItem] {
-        &self.inventory
+        match self.inventory.as_ref() {
+            Some(vec_ref) => &vec_ref.0,
+            None => &[],
+        }
     }
 
     fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        &mut self.inventory
+        self.inventory.get_or_insert_with(|| Json(Vec::new()))
     }
 }
 

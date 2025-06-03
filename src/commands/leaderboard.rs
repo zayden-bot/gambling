@@ -80,7 +80,7 @@ pub trait LeaderboardManager<Db: Database> {
 pub struct NetWorthRow {
     pub id: i64,
     pub coins: i64,
-    pub inventory: Json<Vec<GamblingItem>>,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
 }
 
 impl Coins for NetWorthRow {
@@ -95,11 +95,14 @@ impl Coins for NetWorthRow {
 
 impl ItemInventory for NetWorthRow {
     fn inventory(&self) -> &[GamblingItem] {
-        &self.inventory
+        match self.inventory.as_ref() {
+            Some(vec_ref) => &vec_ref.0,
+            None => &[],
+        }
     }
 
     fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        &mut self.inventory
+        self.inventory.get_or_insert_with(|| Json(Vec::new()))
     }
 }
 

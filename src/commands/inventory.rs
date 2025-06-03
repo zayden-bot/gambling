@@ -62,7 +62,7 @@ pub trait InventoryManager<Db: Database> {
 pub struct InventoryRow {
     pub coins: i64,
     pub gems: i64,
-    pub inventory: Json<Vec<GamblingItem>>,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
     pub tech: i64,
     pub utility: i64,
     pub production: i64,
@@ -97,11 +97,14 @@ impl Gems for InventoryRow {
 
 impl ItemInventory for InventoryRow {
     fn inventory(&self) -> &[GamblingItem] {
-        &self.inventory
+        match self.inventory.as_ref() {
+            Some(vec_ref) => &vec_ref.0,
+            None => &[],
+        }
     }
 
     fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        &mut self.inventory
+        self.inventory.get_or_insert_with(|| Json(Vec::new()))
     }
 }
 

@@ -57,6 +57,8 @@ pub trait Stamina {
 
             let target_minute_value = ((now.minute() / 10) + 1) * 10;
 
+            println!("{}", target_minute_value);
+
             let next_timestamp = now
                 .with_minute(target_minute_value)
                 .unwrap()

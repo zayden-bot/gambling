@@ -20,7 +20,7 @@ pub trait ProfileManager<Db: Database> {
 pub struct ProfileRow {
     pub coins: i64,
     pub gems: i64,
-    pub inventory: Json<Vec<GamblingItem>>,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
     pub xp: i32,
     pub level: i32,
 }
@@ -47,11 +47,14 @@ impl Gems for ProfileRow {
 
 impl ItemInventory for ProfileRow {
     fn inventory(&self) -> &[GamblingItem] {
-        &self.inventory
+        match self.inventory.as_ref() {
+            Some(vec_ref) => &vec_ref.0,
+            None => &[],
+        }
     }
 
     fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        &mut self.inventory
+        self.inventory.get_or_insert_with(|| Json(Vec::new()))
     }
 }
 
