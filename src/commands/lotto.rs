@@ -83,7 +83,7 @@ impl Lotto {
             let expected_winners = prize_share.len();
 
             if rows.len() < expected_winners {
-                return Ok(());
+                return;
             }
 
             let total_tickets: i64 = rows.iter().map(|row| row.quantity()).sum();
