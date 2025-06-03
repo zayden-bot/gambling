@@ -1,3 +1,4 @@
+use chrono::DateTime;
 use chrono::Days;
 use chrono::NaiveTime;
 use chrono::Utc;
@@ -94,8 +95,8 @@ const SPADES_Q: EmojiId = EmojiId::new(1377739546799640638);
 const SPADES_K: EmojiId = EmojiId::new(1377739530450239538);
 const SPADES_A: EmojiId = EmojiId::new(1377739512750280925);
 
-fn tomorrow() -> i64 {
-    Utc::now()
+fn tomorrow(now: Option<DateTime<Utc>>) -> i64 {
+    now.unwrap_or_else(Utc::now)
         .checked_add_days(Days::new(1))
         .unwrap()
         .with_time(NaiveTime::MIN)

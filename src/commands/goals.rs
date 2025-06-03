@@ -79,7 +79,7 @@ impl Commands {
 
         desc.push_str(&format!(
             "Reward for completing __**each goals**__: 5,000 <:coin:{COIN}>\nReward for completing __**all goals**__: 1 💎\n\nGoals reset <t:{}:R>",
-            tomorrow()
+            tomorrow(None)
         ));
 
         let embed = CreateEmbed::new().title("Daily Goals 📋").description(desc);
