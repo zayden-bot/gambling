@@ -195,6 +195,8 @@ impl Commands {
             )
             .await?;
 
+        GameHandler::save(pool, row).await.unwrap();
+
         let result = if payout > 0 {
             format!("Profit: {payout}")
         } else {
