@@ -12,7 +12,7 @@ use sqlx::{Database, Pool};
 use zayden_core::CronJob;
 
 use crate::shop::LOTTO_TICKET;
-use crate::{COIN, Coins, Commands, Error, FormatNum, Result};
+use crate::{COIN, Coins, Commands, FormatNum, Result};
 
 const CHANNEL_ID: ChannelId = ChannelId::new(1281440730820116582);
 
@@ -72,8 +72,7 @@ impl Coins for LottoRow {
 pub struct Lotto;
 
 impl Lotto {
-    pub fn cron_job<E: std::error::Error, Db: Database, Manager: LottoManager<Db>>()
-    -> CronJob<Db, E> {
+    pub fn cron_job<Db: Database, Manager: LottoManager<Db>>() -> CronJob<Db> {
         CronJob::new("0 0 17 * * Fri *").set_action(|ctx, pool| async move {
             let mut tx: sqlx::Transaction<'static, Db> = pool.begin().await.unwrap();
 
@@ -122,8 +121,6 @@ impl Lotto {
             }
 
             tx.commit().await.unwrap();
-
-            Ok(())
         })
     }
 }
@@ -149,7 +146,7 @@ impl Commands {
         let lotto_emoji = LOTTO_TICKET.emoji();
 
         let timestamp = {
-            Lotto::cron_job::<Error, Db, Manager>()
+            Lotto::cron_job::<Db, Manager>()
                 .schedule
                 .upcoming(chrono::Utc)
                 .next()
