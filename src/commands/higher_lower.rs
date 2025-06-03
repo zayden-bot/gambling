@@ -17,10 +17,10 @@ use crate::{
     CLUBS_2, CLUBS_3, CLUBS_4, CLUBS_5, CLUBS_6, CLUBS_7, CLUBS_8, CLUBS_9, CLUBS_10, CLUBS_A,
     CLUBS_J, CLUBS_K, CLUBS_Q, Coins, DIAMONDS_2, DIAMONDS_3, DIAMONDS_4, DIAMONDS_5, DIAMONDS_6,
     DIAMONDS_7, DIAMONDS_8, DIAMONDS_9, DIAMONDS_10, DIAMONDS_A, DIAMONDS_J, DIAMONDS_K,
-    DIAMONDS_Q, Error, Game, GameManager, GameRow, GoalsManager, HEARTS_2, HEARTS_3, HEARTS_4,
-    HEARTS_5, HEARTS_6, HEARTS_7, HEARTS_8, HEARTS_9, HEARTS_10, HEARTS_A, HEARTS_J, HEARTS_K,
-    HEARTS_Q, Result, SPADES_2, SPADES_3, SPADES_4, SPADES_5, SPADES_6, SPADES_7, SPADES_8,
-    SPADES_9, SPADES_10, SPADES_A, SPADES_J, SPADES_K, SPADES_Q, ShopCurrency,
+    DIAMONDS_Q, Error, FormatNum, Game, GameManager, GameRow, GoalsManager, HEARTS_2, HEARTS_3,
+    HEARTS_4, HEARTS_5, HEARTS_6, HEARTS_7, HEARTS_8, HEARTS_9, HEARTS_10, HEARTS_A, HEARTS_J,
+    HEARTS_K, HEARTS_Q, Result, SPADES_2, SPADES_3, SPADES_4, SPADES_5, SPADES_6, SPADES_7,
+    SPADES_8, SPADES_9, SPADES_10, SPADES_A, SPADES_J, SPADES_K, SPADES_Q, ShopCurrency,
 };
 
 use super::Commands;
@@ -182,7 +182,7 @@ impl Commands {
             Colour::RED
         };
 
-        let coins = row.coins();
+        let coins = row.coins_str();
 
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
@@ -198,16 +198,17 @@ impl Commands {
         GameHandler::save(pool, row).await.unwrap();
 
         let result = if payout > 0 {
-            format!("Profit: {payout}")
+            format!("Profit: {}", payout.format())
         } else {
-            format!("Lost: {payout}")
+            format!("Lost: {}", payout.format())
         };
 
         let embed = CreateEmbed::new()
             .title("Higher or Lower")
             .description(format!(
                 "{}\n\nFinal Payout: {}\n\nThis game has ended.\n\n{result}\nYour coins: {coins}",
-                prev_seq, payout
+                prev_seq,
+                payout.format()
             ))
             .colour(colour);
 
