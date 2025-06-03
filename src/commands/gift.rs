@@ -157,7 +157,10 @@ impl Commands {
         *recipient_row.coins_mut() += GIFT_AMOUNT;
 
         Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(&mut user_row, Event::Send(SendEvent::new(GIFT_AMOUNT)))
+            .fire(
+                &mut user_row,
+                Event::Send(SendEvent::new(GIFT_AMOUNT, interaction.user.id)),
+            )
             .await?;
 
         let embed = CreateEmbed::new()

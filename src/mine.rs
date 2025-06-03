@@ -68,43 +68,43 @@ impl Mining for MineRow {
     }
 
     fn tech(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn utility(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn production(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn coal(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn iron(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn gold(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn redstone(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn lapis(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn diamonds(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 
     fn emeralds(&self) -> i64 {
-        todo!()
+        unimplemented!()
     }
 }
 

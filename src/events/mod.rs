@@ -21,7 +21,8 @@ impl Event {
         match self {
             Self::GameEnd(event) => event.user_id,
             Self::Work(id) => *id,
-            _ => todo!(),
+            Self::Send(event) => event.sender,
+            Self::ShopPurchase(event) => event.user_id,
         }
     }
 }
@@ -43,21 +44,29 @@ impl GameEndEvent {
 }
 
 pub struct ShopPurchaseEvent {
+    pub user_id: UserId,
     pub item_id: String,
 }
 
 impl ShopPurchaseEvent {
-    pub fn new(id: impl Into<String>) -> Self {
-        Self { item_id: id.into() }
+    pub fn new(user_id: impl Into<UserId>, item_id: impl Into<String>) -> Self {
+        Self {
+            user_id: user_id.into(),
+            item_id: item_id.into(),
+        }
     }
 }
 
 pub struct SendEvent {
     pub amount: i64,
+    pub sender: UserId,
 }
 
 impl SendEvent {
-    pub fn new(amount: i64) -> Self {
-        Self { amount }
+    pub fn new(amount: i64, sender: impl Into<UserId>) -> Self {
+        Self {
+            amount,
+            sender: sender.into(),
+        }
     }
 }

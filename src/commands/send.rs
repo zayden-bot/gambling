@@ -117,7 +117,10 @@ impl Commands {
         *recipient_row.coins_mut() += amount;
 
         Dispatch::<Db, GoalHandler>::new(pool)
-            .fire(&mut user_row, Event::Send(SendEvent::new(amount)))
+            .fire(
+                &mut user_row,
+                Event::Send(SendEvent::new(amount, interaction.user.id)),
+            )
             .await
             .unwrap();
 

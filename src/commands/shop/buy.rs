@@ -279,7 +279,7 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyMa
     Dispatch::<Db, GoalsHandler>::new(pool)
         .fire(
             &mut row,
-            Event::ShopPurchase(ShopPurchaseEvent::new(item.id)),
+            Event::ShopPurchase(ShopPurchaseEvent::new(interaction.user.id, item.id)),
         )
         .await?;
 
