@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::{Days, NaiveDate, NaiveTime, Utc};
+use chrono::{NaiveDate, Utc};
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     CreateEmbed, EditInteractionResponse, Mentionable, ResolvedOption, ResolvedValue, UserId,
@@ -10,6 +10,7 @@ use zayden_core::FormatNum;
 use crate::{
     Coins, Error, Gems, GoalsManager, MaxBet, Result, START_AMOUNT,
     events::{Dispatch, Event, SendEvent},
+    tomorrow,
 };
 
 const GIFT_AMOUNT: i64 = (START_AMOUNT as f64 * 2.5) as i64;
@@ -23,14 +24,12 @@ pub trait GiftManager<Db: Database> {
         id: impl Into<UserId> + Send,
     ) -> sqlx::Result<Option<SenderRow>>;
 
-    async fn recipient(
+    async fn add_coins(
         pool: &Pool<Db>,
         id: impl Into<UserId> + Send,
-    ) -> sqlx::Result<Option<RecipientRow>>;
+    ) -> sqlx::Result<AnyQueryResult>;
 
     async fn save_sender(pool: &Pool<Db>, row: SenderRow) -> sqlx::Result<AnyQueryResult>;
-
-    async fn save_recipient(pool: &Pool<Db>, row: RecipientRow) -> sqlx::Result<AnyQueryResult>;
 }
 
 #[derive(FromRow)]
@@ -136,25 +135,12 @@ impl Commands {
             .unwrap_or_else(|| SenderRow::new(interaction.user.id));
 
         let now = Utc::now();
-        let today = now.naive_utc().date();
-        let tomorrow = now
-            .with_time(NaiveTime::MIN)
-            .unwrap()
-            .checked_add_days(Days::new(1))
-            .unwrap();
 
         if user_row.gift == now.naive_utc().date() {
-            return Err(Error::GiftUsed(tomorrow.timestamp()));
+            return Err(Error::GiftUsed(tomorrow(Some(now))));
         }
 
-        user_row.gift = today;
-
-        let mut recipient_row = GiftHandler::recipient(pool, recipient.id)
-            .await
-            .unwrap()
-            .unwrap_or_else(|| RecipientRow::new(interaction.user.id));
-
-        *recipient_row.coins_mut() += GIFT_AMOUNT;
+        GiftHandler::add_coins(pool, recipient.id).await.unwrap();
 
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
@@ -162,6 +148,8 @@ impl Commands {
                 Event::Send(SendEvent::new(GIFT_AMOUNT, interaction.user.id)),
             )
             .await?;
+
+        GiftHandler::save_sender(pool, user_row).await.unwrap();
 
         let embed = CreateEmbed::new()
             .description(format!(
