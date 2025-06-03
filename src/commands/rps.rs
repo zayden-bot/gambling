@@ -1,28 +1,31 @@
 use std::{fmt::Display, str::FromStr};
 
-use async_trait::async_trait;
 use rand::seq::IndexedRandom;
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
-use sqlx::{PgPool, Postgres};
-use zayden_core::{SlashCommand, parse_options};
+use sqlx::{Database, Pool};
+use zayden_core::parse_options;
 
-use crate::{Error, Result};
+use crate::events::{Dispatch, Event, GameEndEvent};
+use crate::{
+    COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result, VerifyBet,
+};
 
-use super::events::{Dispatch, Event, GameEndEvent};
-use super::{COIN, GamblingManager, GamblingProfile, VerifyBet, run_effects};
+use super::Commands;
 
-pub struct RPS;
-
-#[async_trait]
-impl SlashCommand<Error, Postgres> for RPS {
-    async fn run(
+impl Commands {
+    pub async fn rps<
+        Db: Database,
+        GoalHandler: GoalsManager<Db>,
+        EffectsHandler: EffectsManager<Db> + Send,
+        GameHandler: GameManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         options: Vec<ResolvedOption<'_>>,
-        pool: &PgPool,
+        pool: &Pool<Db>,
     ) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
@@ -37,9 +40,9 @@ impl SlashCommand<Error, Postgres> for RPS {
             unreachable!("bet is required")
         };
 
-        let mut row = GamblingProfile::from_table(pool, interaction.user.id).await?;
-
-        let dispatch = Dispatch::new(pool);
+        let mut row = GameHandler::row(pool, interaction.user.id)
+            .await?
+            .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
         row.verify_cooldown()?;
         row.verify_bet(bet)?;
@@ -55,14 +58,17 @@ impl SlashCommand<Error, Postgres> for RPS {
             0
         };
 
-        payout = run_effects(pool, interaction.user.id, payout).await;
+        payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
 
         row.add_coins(payout);
 
         let coins = row.coins();
 
-        dispatch
-            .fire(Event::GameEnd(GameEndEvent::new("rps", row, payout)))
+        Dispatch::<Db, GoalHandler>::new(pool)
+            .fire(
+                &mut row,
+                Event::GameEnd(GameEndEvent::new("rps", interaction.user.id, payout)),
+            )
             .await?;
 
         let title = if winner == Some(true) {
@@ -108,8 +114,8 @@ impl SlashCommand<Error, Postgres> for RPS {
         Ok(())
     }
 
-    fn register(_ctx: &Context) -> Result<CreateCommand> {
-        let cmd = CreateCommand::new("rps")
+    pub fn register_rps() -> CreateCommand {
+        CreateCommand::new("rps")
             .description("Play a game of rock paper scissors against the bot")
             .add_option(
                 CreateCommandOption::new(
@@ -125,9 +131,7 @@ impl SlashCommand<Error, Postgres> for RPS {
             .add_option(
                 CreateCommandOption::new(CommandOptionType::Integer, "bet", "The amount to bet.")
                     .required(true),
-            );
-
-        Ok(cmd)
+            )
     }
 }
 

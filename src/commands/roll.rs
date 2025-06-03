@@ -1,25 +1,28 @@
-use async_trait::async_trait;
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
-use sqlx::{PgPool, Postgres};
-use zayden_core::{SlashCommand, parse_options};
+use sqlx::{Database, Pool};
+use zayden_core::parse_options;
 
-use crate::{Error, Result};
+use crate::events::{Dispatch, Event, GameEndEvent};
+use crate::{
+    COIN, Coins, EffectsManager, Error, Game, GameManager, GameRow, GoalsManager, Result, VerifyBet,
+};
 
-use super::events::{Dispatch, Event, GameEndEvent};
-use super::{COIN, GamblingManager, GamblingProfile, VerifyBet, run_effects};
+use super::Commands;
 
-pub struct Roll;
-
-#[async_trait]
-impl SlashCommand<Error, Postgres> for Roll {
-    async fn run(
+impl Commands {
+    pub async fn roll<
+        Db: Database,
+        GoalHandler: GoalsManager<Db>,
+        EffectsHandler: EffectsManager<Db> + Send,
+        GameHandler: GameManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         options: Vec<ResolvedOption<'_>>,
-        pool: &PgPool,
+        pool: &Pool<Db>,
     ) -> Result<()> {
         interaction.defer(ctx).await?;
 
@@ -37,11 +40,10 @@ impl SlashCommand<Error, Postgres> for Roll {
 
         verify_prediction(prediction, 0, n_sides + 1)?;
 
-        let mut row = GamblingProfile::from_table(pool, interaction.user.id)
+        let mut row = GameHandler::row(pool, interaction.user.id)
             .await
-            .unwrap();
-
-        let dispatch = Dispatch::new(pool);
+            .unwrap()
+            .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
         row.verify_cooldown()?;
 
@@ -64,15 +66,20 @@ impl SlashCommand<Error, Postgres> for Roll {
             ("🎲 Dice Roll 🎲 - You Lost!", "Lost:", -bet, Colour::RED)
         };
 
-        payout = run_effects(pool, interaction.user.id, payout).await;
+        payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
 
         row.add_coins(payout);
 
         let coins = row.coins();
 
-        dispatch
-            .fire(Event::GameEnd(GameEndEvent::new("roll", row, payout)))
+        Dispatch::<Db, GoalHandler>::new(pool)
+            .fire(
+                &mut row,
+                Event::GameEnd(GameEndEvent::new("roll", interaction.user.id, payout)),
+            )
             .await?;
+
+        GameHandler::save(pool, row).await.unwrap();
 
         let desc = format!(
             "Your bet: {bet} <:coin:{COIN}>\n\n**You picked:** {prediction} 🎲\n**Result:** {roll} 🎲\n\n{result} {payout}\nYour coins: {coins}",
@@ -91,8 +98,8 @@ impl SlashCommand<Error, Postgres> for Roll {
         Ok(())
     }
 
-    fn register(_ctx: &Context) -> Result<CreateCommand> {
-        let cmd = CreateCommand::new("roll")
+    pub fn register_roll() -> CreateCommand {
+        CreateCommand::new("roll")
             .description("Roll the dice")
             .add_option(
                 CreateCommandOption::new(
@@ -119,9 +126,7 @@ impl SlashCommand<Error, Postgres> for Roll {
             .add_option(
                 CreateCommandOption::new(CommandOptionType::Integer, "bet", "Roll the dice")
                     .required(true),
-            );
-
-        Ok(cmd)
+            )
     }
 }
 

@@ -1,48 +1,47 @@
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
-use async_trait::async_trait;
 use futures::StreamExt;
 use rand::{rng, seq::IndexedRandom};
 use serenity::all::{
     ActionRow, ActionRowComponent, ButtonStyle, Colour, CommandInteraction, CommandOptionType,
     ComponentInteraction, Context, CreateActionRow, CreateButton, CreateCommand,
     CreateCommandOption, CreateEmbed, CreateInteractionResponse, CreateInteractionResponseMessage,
-    EditInteractionResponse, EmojiId, Mentionable, ReactionType, ResolvedOption, ResolvedValue,
-    UserId,
+    EditInteractionResponse, Mentionable, ReactionType, ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::{PgPool, Postgres};
-use zayden_core::{SlashCommand, parse_options};
+use sqlx::{Database, Pool};
+use zayden_core::parse_options;
 
-use crate::modules::gambling::events::GameEndEvent;
-use crate::sqlx_lib::TableRow;
-use crate::{Error, Result};
+use crate::{
+    BLANK, COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result,
+    VerifyBet,
+    events::{Dispatch, Event, GameEndEvent},
+};
 
-use super::events::{Dispatch, Event};
-use super::{COIN, GamblingManager, GamblingProfile, VerifyBet};
+use super::Commands;
 
-const BLANK: EmojiId = EmojiId::new(1360623141969203220);
 const EMOJI_P1: char = '❌';
 const EMOJI_P2: char = '⭕';
 
-pub struct TicTacToe;
-
-#[async_trait]
-impl SlashCommand<Error, Postgres> for TicTacToe {
-    async fn run(
+impl Commands {
+    pub async fn tictactoe<
+        Db: Database,
+        GoalHandler: GoalsManager<Db>,
+        EffectsHandler: EffectsManager<Db> + Send,
+        GameHandler: GameManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         options: Vec<ResolvedOption<'_>>,
-        pool: &PgPool,
+        pool: &Pool<Db>,
     ) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
-        let p1_row = GamblingProfile::from_table(pool, interaction.user.id)
+        let row = GameHandler::row(pool, interaction.user.id)
             .await
-            .unwrap();
+            .unwrap()
+            .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
-        let dispatch = Dispatch::new(pool);
-
-        p1_row.verify_cooldown()?;
+        row.verify_cooldown()?;
 
         let mut options = parse_options(options);
 
@@ -54,10 +53,9 @@ impl SlashCommand<Error, Postgres> for TicTacToe {
             unreachable!("bet is required option")
         };
 
-        p1_row.verify_bet(bet)?;
+        row.verify_bet(bet)?;
 
-        p1_row.save(pool).await.unwrap();
-        drop(p1_row);
+        GameHandler::save(pool, row).await.unwrap();
 
         let embed = CreateEmbed::new().title("TicTacToe").description(format!(
             "{} wants to play tic-tac-toe ({size}x{size}) for **{bet}** <:coin:{COIN}>",
@@ -90,7 +88,8 @@ impl SlashCommand<Error, Postgres> for TicTacToe {
             .timeout(Duration::from_secs(120))
             .stream();
 
-        let mut state = GameState::new(interaction.user.id, size.parse().unwrap(), bet);
+        let mut state =
+            GameState::<Db, GameHandler>::new(interaction.user.id, size.parse().unwrap(), bet);
 
         while let Some(component) = stream.next().await {
             if !run_component(ctx, interaction, component, pool, &mut state).await? {
@@ -131,12 +130,20 @@ impl SlashCommand<Error, Postgres> for TicTacToe {
                 .colour(Colour::TEAL)
         };
 
+        let dispatch = Dispatch::<Db, GoalHandler>::new(pool);
+
         dispatch
-            .fire(Event::GameEnd(GameEndEvent::new("rps", p1_row, state.bet)))
+            .fire(
+                &mut p1_row,
+                Event::GameEnd(GameEndEvent::new("rps", state.players[0], state.bet)),
+            )
             .await?;
 
         dispatch
-            .fire(Event::GameEnd(GameEndEvent::new("rps", p2_row, state.bet)))
+            .fire(
+                &mut p2_row,
+                Event::GameEnd(GameEndEvent::new("rps", state.players[1], state.bet)),
+            )
             .await?;
 
         interaction
@@ -152,8 +159,8 @@ impl SlashCommand<Error, Postgres> for TicTacToe {
         Ok(())
     }
 
-    fn register(_ctx: &Context) -> Result<CreateCommand> {
-        Ok(CreateCommand::new("tictactoe")
+    pub fn register_tictactoe() -> CreateCommand {
+        CreateCommand::new("tictactoe")
             .description("Play a game of tic tac toe")
             .add_option(
                 CreateCommandOption::new(
@@ -169,19 +176,26 @@ impl SlashCommand<Error, Postgres> for TicTacToe {
             .add_option(
                 CreateCommandOption::new(CommandOptionType::Integer, "bet", "The amount to bet.")
                     .required(true),
-            ))
+            )
     }
 }
 
-struct GameState {
+struct GameState<Db: Database, Manager: GameManager<Db>> {
     size: usize,
     players: [UserId; 2],
     current_turn: UserId,
     bet: i64,
     winner: Option<UserId>,
+
+    _db: PhantomData<Db>,
+    _manager: PhantomData<Manager>,
 }
 
-impl GameState {
+impl<Db, Manager> GameState<Db, Manager>
+where
+    Db: Database,
+    Manager: GameManager<Db>,
+{
     fn new(p1: impl Into<UserId>, size: usize, bet: i64) -> Self {
         let p1 = p1.into();
 
@@ -191,34 +205,42 @@ impl GameState {
             current_turn: p1,
             bet,
             winner: None,
+
+            _db: PhantomData,
+            _manager: PhantomData,
         }
     }
 
-    async fn p1_row(&self, pool: &PgPool) -> GamblingProfile {
-        GamblingProfile::from_table(pool, self.players[0])
+    async fn p1_row(&self, pool: &Pool<Db>) -> GameRow {
+        let id = self.players[0];
+
+        Manager::row(pool, id)
             .await
             .unwrap()
+            .unwrap_or_else(|| GameRow::new(id))
     }
 
-    async fn p2_row(&self, pool: &PgPool) -> GamblingProfile {
-        GamblingProfile::from_table(pool, self.players[1])
+    async fn p2_row(&self, pool: &Pool<Db>) -> GameRow {
+        let id = self.players[1];
+
+        Manager::row(pool, id)
             .await
             .unwrap()
+            .unwrap_or_else(|| GameRow::new(id))
     }
 
-    fn verify_bet(&self, p1: &GamblingProfile, p2: &GamblingProfile) -> Result<()> {
+    fn verify_bet(&self, p1: &GameRow, p2: &GameRow) -> Result<()> {
         p1.verify_bet(self.bet)?;
-        p2.verify_bet(self.bet)?;
-        Ok(())
+        p2.verify_bet(self.bet)
     }
 }
 
-async fn run_component(
+async fn run_component<Db: Database, Manager: GameManager<Db>>(
     ctx: &Context,
     interaction: &CommandInteraction,
     component: ComponentInteraction,
-    pool: &PgPool,
-    state: &mut GameState,
+    pool: &Pool<Db>,
+    state: &mut GameState<Db, Manager>,
 ) -> Result<bool> {
     let custom_id = &component.data.custom_id;
 
@@ -335,19 +357,15 @@ async fn run_component(
     Ok(true)
 }
 
-async fn accept(
-    pool: &PgPool,
-    state: &mut GameState,
+async fn accept<Db: Database, Manager: GameManager<Db>>(
+    pool: &Pool<Db>,
+    state: &mut GameState<Db, Manager>,
     p2: UserId,
 ) -> Result<CreateInteractionResponseMessage> {
     state.players[1] = p2;
 
-    let mut p1_row = GamblingProfile::from_table(pool, state.players[0])
-        .await
-        .unwrap();
-    let mut p2_row = GamblingProfile::from_table(pool, state.players[1])
-        .await
-        .unwrap();
+    let mut p1_row = state.p1_row(pool).await;
+    let mut p2_row = state.p2_row(pool).await;
 
     state.verify_bet(&p1_row, &p2_row)?;
 
@@ -356,8 +374,8 @@ async fn accept(
     p1_row.add_coins(-state.bet);
     p2_row.add_coins(-state.bet);
 
-    p1_row.save(pool).await.unwrap();
-    p2_row.save(pool).await.unwrap();
+    Manager::save(pool, p1_row).await.unwrap();
+    Manager::save(pool, p2_row).await.unwrap();
 
     let embed = CreateEmbed::new()
         .title("TicTacToe")
@@ -382,7 +400,11 @@ async fn accept(
         .components(components))
 }
 
-fn check_win(state: &GameState, components: &[ActionRow], target: ReactionType) -> bool {
+fn check_win<Db: Database, Manager: GameManager<Db>>(
+    state: &GameState<Db, Manager>,
+    components: &[ActionRow],
+    target: ReactionType,
+) -> bool {
     let get_emoji = |r: usize, c: usize| -> Option<&ReactionType> {
         match components.get(r).unwrap().components.get(c).unwrap() {
             ActionRowComponent::Button(b) => b.emoji.as_ref(),

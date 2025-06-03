@@ -2,21 +2,12 @@ use std::collections::HashMap;
 
 use chrono::{Duration, NaiveDateTime, Utc};
 
-mod gambling_item;
-// mod gambling;
 mod gambling_effects;
 mod gambling_goals;
-// mod gambling_inventory;
-// mod gambling_level;
-// mod gambling_profile;
+mod gambling_item;
 mod game_row;
 
-// pub use gambling::{GamblingRow, GamblingTable};
 pub use gambling_effects::{EffectsManager, EffectsRow};
-// pub use gambling_goals::{GamblingGoalsRow, GamblingGoalsTable};
-// pub use gambling_inventory::{GamblingInventoryRow, GamblingInventoryTable};
-// pub use gambling_level::GamblingAndLevel;
-// pub use gambling_profile::{GamblingItem, GamblingProfile};
 pub use gambling_goals::GamblingGoalsRow;
 pub use gambling_item::GamblingItem;
 pub use game_row::{GameManager, GameRow};
@@ -254,14 +245,3 @@ pub trait Game {
 
     fn update_game(&mut self);
 }
-
-// --- Old
-// pub trait GamblingManager {
-//     fn user_id(&self) -> UserId;
-
-//     fn work_mut(&mut self) -> &mut NaiveDateTime;
-
-//     fn update_work(&mut self) {
-//         *self.work_mut() = Utc::now().naive_utc();
-//     }
-// }

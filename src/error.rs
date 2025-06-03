@@ -1,16 +1,9 @@
-use zayden_core::Error as ZaydenError;
-
 use crate::ShopCurrency;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    MissingGuildId,
-    NotInteractionAuthor,
-    NegativeHours,
-
-    // region: Gambling
     PremiumRequired,
     InsufficientFunds {
         required: i64,
@@ -31,7 +24,7 @@ pub enum Error {
     InvalidAmount,
     ItemNotInInventory,
     InsufficientItemQuantity(i64),
-    //endregion
+
     Serenity(serenity::Error),
     Sqlx(sqlx::Error),
 }
@@ -39,10 +32,6 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::MissingGuildId => ZaydenError::MissingGuildId.fmt(f),
-            Error::NotInteractionAuthor => write!(f, "You are not the author of this interaction."),
-            Error::NegativeHours => write!(f, "Hours must be a positive number."),
-
             Error::PremiumRequired => write!(f, "Sorry, only supporters can use this option"),
             Error::InsufficientFunds { required, currency } => write!(
                 f,

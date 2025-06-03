@@ -6,18 +6,24 @@ pub mod gift;
 pub mod goals;
 pub mod higher_lower;
 pub mod inventory;
-// pub mod leaderboard;
+pub mod leaderboard;
 pub mod lotto;
 pub mod profile;
-// pub mod roll;
-// pub mod rps;
+pub mod roll;
+pub mod rps;
 pub mod send;
 pub mod shop;
-// pub mod tictactoe;
+pub mod tictactoe;
 pub mod work;
 
 pub struct Commands;
 pub use lotto::Lotto;
+
+impl Commands {
+    pub fn run() {}
+
+    pub fn register() {}
+}
 
 /*
 blackjack

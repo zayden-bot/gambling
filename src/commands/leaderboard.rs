@@ -1,26 +1,158 @@
 use std::time::Duration;
 
 use async_trait::async_trait;
-use futures::{StreamExt, stream};
+use futures::StreamExt;
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, ComponentInteraction, Context, CreateButton,
     CreateCommand, CreateCommandOption, CreateEmbed, CreateEmbedFooter, CreateInteractionResponse,
     CreateInteractionResponseMessage, EditInteractionResponse, Mentionable, Message,
     ResolvedOption, ResolvedValue, UserId,
 };
-use zayden_core::SlashCommand;
+use sqlx::{Database, Pool, prelude::FromRow};
+use zayden_core::cache::GuildMembersCache;
 
-use crate::{Error, Result};
+use crate::{
+    Coins, FormatNum, GamblingItem, Gems, ItemInventory, Result,
+    shop::{EGGPLANT, LOTTO_TICKET, SHOP_ITEMS},
+};
 
-pub struct Leaderboard;
+use super::Commands;
 
 #[async_trait]
-impl SlashCommand<Error, Postgres> for Leaderboard {
-    async fn run(
+pub trait LeaderboardManager<Db: Database> {
+    async fn networth(
+        pool: &Pool<Db>,
+        users: &[i64],
+        page_num: i64,
+    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+
+    async fn networth_row_number(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<i64>>;
+
+    async fn coins(
+        pool: &Pool<Db>,
+        users: &[i64],
+        page_num: i64,
+    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+
+    async fn coins_row_number(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<i64>>;
+
+    async fn gems(
+        pool: &Pool<Db>,
+        users: &[i64],
+        page_num: i64,
+    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+
+    async fn gems_row_number(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<i64>>;
+
+    async fn eggplants(
+        pool: &Pool<Db>,
+        users: &[i64],
+        page_num: i64,
+    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+
+    async fn eggplants_row_number(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<i64>>;
+
+    async fn lottotickets(
+        pool: &Pool<Db>,
+        users: &[i64],
+        page_num: i64,
+    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+
+    async fn lottotickets_row_number(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<i64>>;
+}
+
+#[derive(FromRow)]
+pub struct NetWorthRow {
+    pub id: i64,
+    pub coins: i64,
+    pub inventory: Vec<GamblingItem>,
+}
+
+impl Coins for NetWorthRow {
+    fn coins(&self) -> i64 {
+        self.coins
+    }
+
+    fn coins_mut(&mut self) -> &mut i64 {
+        &mut self.coins
+    }
+}
+
+impl ItemInventory for NetWorthRow {
+    fn inventory(&self) -> &[GamblingItem] {
+        &self.inventory
+    }
+
+    fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
+        &mut self.inventory
+    }
+}
+
+#[derive(FromRow)]
+pub struct CoinsRow {
+    pub id: i64,
+    pub coins: i64,
+}
+
+impl Coins for CoinsRow {
+    fn coins(&self) -> i64 {
+        self.coins
+    }
+
+    fn coins_mut(&mut self) -> &mut i64 {
+        &mut self.coins
+    }
+}
+
+#[derive(FromRow)]
+pub struct GemsRow {
+    pub id: i64,
+    pub gems: i64,
+}
+
+impl Gems for GemsRow {
+    fn gems(&self) -> i64 {
+        self.gems
+    }
+
+    fn gems_mut(&mut self) -> &mut i64 {
+        &mut self.gems
+    }
+}
+
+#[derive(FromRow)]
+pub struct EggplantsRow {
+    pub id: i64,
+    pub quantity: i64,
+}
+
+#[derive(FromRow)]
+pub struct LottoTicketRow {
+    pub id: i64,
+    pub quantity: i64,
+}
+
+impl Commands {
+    pub async fn leaderboard<Db: Database, Manager: LeaderboardManager<Db>>(
         ctx: &Context,
         interaction: &CommandInteraction,
         mut options: Vec<ResolvedOption<'_>>,
-        pool: &PgPool,
+        pool: &Pool<Db>,
     ) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
@@ -39,7 +171,7 @@ impl SlashCommand<Error, Postgres> for Leaderboard {
                 .collect::<Vec<_>>()
         };
 
-        let rows = get_rows(leaderboard, pool, &users, 1).await;
+        let rows = get_rows::<Db, Manager>(leaderboard, pool, &users, 1).await;
 
         let desc = rows
             .into_iter()
@@ -58,7 +190,7 @@ impl SlashCommand<Error, Postgres> for Leaderboard {
             .embed(embed)
             .button(CreateButton::new("leaderboard_previous").label("<"));
 
-        if get_row_number(leaderboard, pool, interaction.user.id)
+        if get_row_number::<Db, Manager>(leaderboard, pool, interaction.user.id)
             .await
             .is_some()
         {
@@ -79,7 +211,7 @@ impl SlashCommand<Error, Postgres> for Leaderboard {
             .stream();
 
         while let Some(component) = stream.next().await {
-            run_component(ctx, pool, &users, &msg, component).await?;
+            run_component::<Db, Manager>(ctx, pool, &users, &msg, component).await?;
         }
 
         interaction
@@ -89,8 +221,8 @@ impl SlashCommand<Error, Postgres> for Leaderboard {
         Ok(())
     }
 
-    fn register(_ctx: &Context) -> Result<CreateCommand> {
-        let cmd = CreateCommand::new("leaderboard")
+    pub fn register_leaderboard() -> CreateCommand {
+        CreateCommand::new("leaderboard")
             .description("The server leaderboard")
             .add_option(
                 CreateCommandOption::new(
@@ -99,21 +231,18 @@ impl SlashCommand<Error, Postgres> for Leaderboard {
                     "The leaderboard to choose",
                 )
                 .required(true)
-                .add_string_choice("Level", "level")
                 .add_string_choice("Net Worth", "networth")
                 .add_string_choice("Coins", "coins")
-                .add_string_choice("Gem", "gem")
-                .add_string_choice(EGGPLANT.name, "eggplant")
-                .add_string_choice(LOTTO_TICKET.name, "lottoticket"),
-            );
-
-        Ok(cmd)
+                .add_string_choice("Gems", "gems")
+                .add_string_choice(EGGPLANT.name, "eggplants")
+                .add_string_choice(LOTTO_TICKET.name, "lottotickets"),
+            )
     }
 }
 
-async fn run_component(
+async fn run_component<Db: Database, Manager: LeaderboardManager<Db>>(
     ctx: &Context,
-    pool: &PgPool,
+    pool: &Pool<Db>,
     users: &[i64],
     msg: &Message,
     interaction: ComponentInteraction,
@@ -145,27 +274,23 @@ async fn run_component(
         .parse()
         .unwrap();
 
-    let rows = match custom_id {
+    match custom_id {
         "previous" => {
             page_number = (page_number - 1).max(1);
-
-            get_rows(leaderboard, pool, users, page_number).await
         }
         "user" => {
-            let row_num = get_row_number(leaderboard, pool, interaction.user.id)
+            let row_num = get_row_number::<Db, Manager>(leaderboard, pool, interaction.user.id)
                 .await
                 .unwrap();
             page_number = row_num / 10 + 1;
-
-            get_rows(leaderboard, pool, users, page_number).await
         }
         "next" => {
             page_number += 1;
-
-            get_rows(leaderboard, pool, users, page_number).await
         }
         _ => unreachable!("Invalid custom id"),
     };
+
+    let rows = get_rows::<Db, Manager>(leaderboard, pool, users, page_number).await;
 
     let desc = rows
         .into_iter()
@@ -191,24 +316,22 @@ async fn run_component(
     Ok(())
 }
 
-enum LeaderboardRow {
-    Level(LevelsRow),
-    NetWorth(GamblingRow, Vec<GamblingInventoryRow>),
-    Coins(GamblingRow),
-    Gem(GamblingRow),
-    Eggplant(GamblingInventoryRow),
-    LottoTicket(GamblingInventoryRow),
+pub enum LeaderboardRow {
+    NetWorth(NetWorthRow),
+    Coins(CoinsRow),
+    Gems(GemsRow),
+    Eggplants(EggplantsRow),
+    LottoTickets(LottoTicketRow),
 }
 
 impl LeaderboardRow {
     pub fn user_id(&self) -> UserId {
         match self {
-            Self::Level(row) => UserId::new(row.id as u64),
-            Self::NetWorth(row, _) => row.user_id(),
-            Self::Coins(row) => row.user_id(),
-            Self::Gem(row) => row.user_id(),
-            Self::Eggplant(row) => row.user_id(),
-            Self::LottoTicket(row) => row.user_id(),
+            Self::NetWorth(row) => UserId::new(row.id as u64),
+            Self::Coins(row) => UserId::new(row.id as u64),
+            Self::Gems(row) => UserId::new(row.id as u64),
+            Self::Eggplants(row) => UserId::new(row.id as u64),
+            Self::LottoTickets(row) => UserId::new(row.id as u64),
         }
     }
 
@@ -224,104 +347,66 @@ impl LeaderboardRow {
         };
 
         let data = match self {
-            Self::Level(row) => format!(
-                "{}\n(Messages: {} | Total XP: {})",
-                row.level(),
-                row.message_count(),
-                row.xp(),
-            ),
-            Self::NetWorth(row, inv) => {
-                let items: u64 = inv
+            Self::NetWorth(row) => {
+                let items = row
+                    .inventory()
                     .iter()
                     .map(|inv_item| {
-                        let item = SHOP_ITEMS.get(&inv_item.item_id).unwrap();
-                        item.coin_cost().unwrap() as u64 * inv_item.quantity as u64
-                    })
-                    .sum();
+                        let item_cost = SHOP_ITEMS
+                            .get(&inv_item.item_id)
+                            .and_then(|item| item.coin_cost())
+                            .unwrap();
 
-                (row.coins() as u64 + items).to_string()
+                        item_cost * inv_item.quantity
+                    })
+                    .sum::<i64>();
+
+                (row.coins() + items).format()
             }
-            Self::Coins(row) => row.coins().to_string(),
-            Self::Gem(row) => row.gems().to_string(),
-            Self::Eggplant(row) => format!("{} {}", row.quantity, EGGPLANT.emoji()),
-            Self::LottoTicket(row) => format!("{} {}", row.quantity, LOTTO_TICKET.emoji()),
+            Self::Coins(row) => row.coins_str(),
+            Self::Gems(row) => row.gems_str(),
+            Self::Eggplants(row) => format!("{} {}", row.quantity.format(), EGGPLANT.emoji()),
+            Self::LottoTickets(row) => {
+                format!("{} {}", row.quantity.format(), LOTTO_TICKET.emoji())
+            }
         };
 
         format!("{place} - {} - {data}", self.user_id().mention())
     }
 }
 
-async fn get_rows(
+async fn get_rows<Db: Database, Manager: LeaderboardManager<Db>>(
     leaderboard: &str,
-    pool: &PgPool,
+    pool: &Pool<Db>,
     users: &[i64],
     page_num: i64,
 ) -> Vec<LeaderboardRow> {
     match leaderboard {
-        "level" => LevelsTable::leaderboard(pool, users, page_num)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(LeaderboardRow::Level)
-            .collect(),
-        "networth" => {
-            let rows = GamblingTable::leaderboard(pool, users, "cash", page_num)
-                .await
-                .unwrap();
-            stream::iter(rows)
-                .then(|row| async {
-                    let inv = GamblingInventoryTable::get_user(pool, row.user_id())
-                        .await
-                        .unwrap();
-                    LeaderboardRow::NetWorth(row, inv)
-                })
-                .collect()
-                .await
-        }
-        "coins" => GamblingTable::leaderboard(pool, users, "cash", page_num)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(LeaderboardRow::Coins)
-            .collect(),
-        "gem" => GamblingTable::leaderboard(pool, users, "diamonds", page_num)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(LeaderboardRow::Gem)
-            .collect(),
-        "eggplant" => GamblingInventoryTable::leaderboard(pool, "eggplant", users, page_num)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(LeaderboardRow::Eggplant)
-            .collect(),
-        "lottoticket" => GamblingInventoryTable::leaderboard(pool, "lottoticket", users, page_num)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(LeaderboardRow::LottoTicket)
-            .collect(),
+        "networth" => Manager::networth(pool, users, page_num).await.unwrap(),
+        "coins" => Manager::coins(pool, users, page_num).await.unwrap(),
+        "gem" => Manager::gems(pool, users, page_num).await.unwrap(),
+        "eggplant" => Manager::eggplants(pool, users, page_num).await.unwrap(),
+        "lottoticket" => Manager::lottotickets(pool, users, page_num).await.unwrap(),
         _ => unreachable!("Invalid leaderboard option"),
     }
 }
 
-async fn get_row_number(leaderboard: &str, pool: &PgPool, user: UserId) -> Option<i64> {
+async fn get_row_number<Db: Database, Manager: LeaderboardManager<Db>>(
+    leaderboard: &str,
+    pool: &Pool<Db>,
+    user: UserId,
+) -> Option<i64> {
     match leaderboard {
-        "level" => LevelsTable::user_row_number(pool, user).await.ok(),
-
-        "coins" => GamblingTable::user_row_number(pool, user, "cash")
+        "coins" => Manager::coins_row_number(pool, user).await.ok().flatten(),
+        "gem" => Manager::gems_row_number(pool, user).await.ok().flatten(),
+        "eggplant" => Manager::eggplants_row_number(pool, user)
             .await
-            .ok(),
-        "gem" => GamblingTable::user_row_number(pool, user, "diamonds")
+            .ok()
+            .flatten(),
+        "lottoticket" => Manager::lottotickets_row_number(pool, user)
             .await
-            .ok(),
-        "eggplant" => GamblingInventoryTable::user_row_number(pool, user, "eggplant")
-            .await
-            .ok(),
-        "lottoticket" => GamblingInventoryTable::user_row_number(pool, user, "lottoticket")
-            .await
-            .ok(),
+            .ok()
+            .flatten(),
         _ => None,
     }
 }

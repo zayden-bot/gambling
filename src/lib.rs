@@ -25,6 +25,8 @@ const SUPER_USER: UserId = UserId::new(211486447369322506);
 
 const START_AMOUNT: i64 = 1000;
 
+const BLANK: EmojiId = EmojiId::new(1360623141969203220);
+
 const COIN: EmojiId = EmojiId::new(1356741391090454705);
 const TAILS: EmojiId = EmojiId::new(1356741709995704600);
 const GEM: char = '💎';

@@ -68,12 +68,7 @@ impl Mine {
 
 #[async_trait]
 impl SlashCommand<Error, Postgres> for Mine {
-    async fn run(
-        ctx: &Context,
-        interaction: &CommandInteraction,
-        _options: Vec<ResolvedOption<'_>>,
-        pool: &PgPool,
-    ) -> Result<()> {
+    async fn run(ctx: &Context, interaction: &CommandInteraction, pool: &PgPool) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
         let row = GamblingMineRow::from_table(pool, interaction.user.id)
@@ -241,27 +236,9 @@ impl GamblingMineRow {
             return 0;
         }
 
-        // let linear_threshold: i64 = 1000;
         let linear_rate_per_miner = 10;
 
-        // let excess_start_rate_factor: f64 = 0.9;
-        // let excess_exponent: f64 = 0.9;
-
-        // if self.miners <= linear_threshold {
         self.miners * linear_rate_per_miner
-        // } else {
-        //     let base_income_from_linear_phase = linear_threshold * linear_rate_per_miner; // e.g., 1000 * 10 = 10000
-        //     let excess_miners = self.miners - linear_threshold;
-
-        //     let c_scaling_factor_for_excess =
-        //         excess_start_rate_factor * (linear_rate_per_miner as f64);
-
-        //     let income_from_excess_miners = (c_scaling_factor_for_excess
-        //         * (excess_miners as f64).powf(excess_exponent))
-        //     .round() as i64;
-
-        //     base_income_from_linear_phase + income_from_excess_miners
-        // }
     }
 
     pub fn max_values(&self) -> HashMap<&str, i64> {
