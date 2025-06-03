@@ -255,7 +255,7 @@ pub trait MaxBet {
     fn level(&self) -> i32;
 
     fn max_bet(&self) -> i64 {
-        self.level() as i64 * 10_000
+        (self.level() as i64 * 10_000).max(10_000)
     }
 }
 
