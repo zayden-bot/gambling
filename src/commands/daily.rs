@@ -5,8 +5,9 @@ use serenity::all::{
     UserId,
 };
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
+use zayden_core::FormatNum;
 
-use crate::{COIN, Coins, Error, FormatNum, Result, START_AMOUNT};
+use crate::{COIN, Coins, Error, Result, START_AMOUNT};
 
 use super::Commands;
 

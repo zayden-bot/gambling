@@ -5,9 +5,10 @@ use serenity::all::{
     CreateEmbed, EditInteractionResponse, Mentionable, ResolvedOption, ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
+use zayden_core::FormatNum;
 
 use crate::{
-    Coins, Error, FormatNum, Gems, GoalsManager, MaxBet, Result, START_AMOUNT,
+    Coins, Error, Gems, GoalsManager, MaxBet, Result, START_AMOUNT,
     events::{Dispatch, Event, SendEvent},
 };
 

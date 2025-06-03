@@ -3,10 +3,11 @@ use std::sync::LazyLock;
 
 use rand::rng;
 use rand::seq::IteratorRandom;
+use zayden_core::FormatNum;
 
+use crate::GamblingGoalsRow;
 use crate::events::{Event, EventRow};
 use crate::shop::LOTTO_TICKET;
-use crate::{FormatNum, GamblingGoalsRow};
 
 #[derive(Clone, Copy)]
 pub struct GoalDefinition {

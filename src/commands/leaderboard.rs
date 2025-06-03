@@ -9,10 +9,10 @@ use serenity::all::{
     ResolvedOption, ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool, prelude::FromRow, types::Json};
-use zayden_core::cache::GuildMembersCache;
+use zayden_core::{FormatNum, cache::GuildMembersCache};
 
 use crate::{
-    Coins, FormatNum, GamblingItem, Gems, ItemInventory, Result,
+    Coins, GamblingItem, Gems, ItemInventory, Result,
     shop::{EGGPLANT, LOTTO_TICKET, SHOP_ITEMS},
 };
 

@@ -6,11 +6,11 @@ use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::models::{GamblingItem, ItemInventory};
 use crate::shop::SALES_TAX;
-use crate::{COIN, Coins, Error, FormatNum, Result, SHOP_ITEMS};
+use crate::{COIN, Coins, Error, Result, SHOP_ITEMS};
 
 #[async_trait]
 pub trait SellManager<Db: Database> {

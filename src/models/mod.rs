@@ -12,8 +12,9 @@ pub use gambling_goals::GamblingGoalsRow;
 pub use gambling_item::GamblingItem;
 pub use game_row::{GameManager, GameRow};
 use sqlx::Database;
+use zayden_core::FormatNum;
 
-use crate::{Error, FormatNum, Result, StaminaCron, StaminaManager, shop::ShopCurrency};
+use crate::{Error, Result, StaminaCron, StaminaManager, shop::ShopCurrency};
 
 pub trait Coins {
     fn coins(&self) -> i64;

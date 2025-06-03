@@ -9,10 +9,10 @@ use serenity::all::{
 use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
-use zayden_core::CronJob;
+use zayden_core::{CronJob, FormatNum};
 
 use crate::shop::LOTTO_TICKET;
-use crate::{COIN, Coins, Commands, FormatNum, Result};
+use crate::{COIN, Coins, Commands, Result};
 
 const CHANNEL_ID: ChannelId = ChannelId::new(1281440730820116582);
 

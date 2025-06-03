@@ -5,12 +5,10 @@ use serenity::all::{
 };
 use sqlx::any::AnyQueryResult;
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, SendEvent};
-use crate::{
-    COIN, Coins, Commands, Error, FormatNum, Gems, GoalsManager, MaxBet, Result, ShopCurrency,
-};
+use crate::{COIN, Coins, Commands, Error, Gems, GoalsManager, MaxBet, Result, ShopCurrency};
 
 pub struct SendRow {
     pub id: i64,

@@ -5,6 +5,7 @@ use serenity::all::{
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool, types::Json};
+use zayden_core::FormatNum;
 
 use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, Result, ShopItem};
 
@@ -103,8 +104,12 @@ impl From<ProfileRow> for CreateEmbed {
             .field(format!("Cash <:coin:{COIN}>"), value.coins_str(), false)
             .field("Gems 💎", value.gems_str(), false)
             .field(
-                format!("Level {}", value.level()),
-                format!("{} / {} xp", value.xp(), level_up_xp(value.level())),
+                format!("Level {}", value.level().format()),
+                format!(
+                    "{} / {} xp",
+                    value.xp().format(),
+                    level_up_xp(value.level()).format()
+                ),
                 false,
             )
             .field("Loot", loot_str, false)

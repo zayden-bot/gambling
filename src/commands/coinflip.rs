@@ -6,12 +6,11 @@ use serenity::all::{
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
-    COIN, Coins, EffectsManager, FormatNum, Game, GameManager, GameRow, GoalsManager, Result,
-    TAILS, VerifyBet,
+    COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result, TAILS, VerifyBet,
 };
 
 use super::Commands;
