@@ -1,23 +1,16 @@
-use async_trait::async_trait;
 use serenity::all::{
     CommandInteraction, Context, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow, types::Json};
+use sqlx::{Database, Pool, prelude::FromRow, types::Json};
 use zayden_core::parse_options;
 
 use crate::{
     Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, Result, SHOP_ITEMS, SUPER_USER,
     ShopCurrency, ShopItem, ShopPage,
+    commands::shop::ShopManager,
     events::{Dispatch, Event, ShopPurchaseEvent},
     models::{GamblingItem, Mining},
 };
-
-#[async_trait]
-pub trait BuyManager<Db: Database> {
-    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<BuyRow>>;
-
-    async fn save(pool: &Pool<Db>, row: BuyRow) -> sqlx::Result<AnyQueryResult>;
-}
 
 #[derive(FromRow)]
 pub struct BuyRow {
@@ -189,7 +182,7 @@ impl MaxBet for BuyRow {
     }
 }
 
-pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyManager<Db>>(
+pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: ShopManager<Db>>(
     ctx: &Context,
     interaction: &CommandInteraction,
     pool: &Pool<Db>,
@@ -209,7 +202,7 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyMa
         unreachable!("amount is required")
     };
 
-    let mut row = match BuyHandler::row(pool, interaction.user.id).await? {
+    let mut row = match BuyHandler::buy_row(pool, interaction.user.id).await? {
         Some(row) => row,
         None => BuyRow::new(interaction.user.id),
     };
@@ -283,7 +276,7 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: BuyMa
         )
         .await?;
 
-    BuyHandler::save(pool, row).await.unwrap();
+    BuyHandler::buy_save(pool, row).await.unwrap();
 
     let cost = costs
         .into_iter()

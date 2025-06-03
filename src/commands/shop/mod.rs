@@ -1,28 +1,48 @@
+use async_trait::async_trait;
 use serenity::all::{
     CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    ResolvedOption, ResolvedValue,
+    ResolvedOption, ResolvedValue, UserId,
 };
+use sqlx::any::AnyQueryResult;
 use sqlx::{Database, Pool};
 
 pub mod buy;
 pub mod list;
 pub mod sell;
 
-pub use buy::{BuyManager, buy};
-pub use list::{ListManager, list};
-pub use sell::{SellManager, sell};
+pub use buy::{BuyRow, buy};
+pub use list::{ListRow, list};
+pub use sell::{SellRow, sell};
 
 use crate::{GoalsManager, Result, SHOP_ITEMS, ShopPage};
 
 use super::Commands;
 
+#[async_trait]
+pub trait ShopManager<Db: Database> {
+    async fn buy_row(pool: &Pool<Db>, id: impl Into<UserId> + Send)
+    -> sqlx::Result<Option<BuyRow>>;
+
+    async fn buy_save(pool: &Pool<Db>, row: BuyRow) -> sqlx::Result<AnyQueryResult>;
+
+    async fn list_row(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<ListRow>>;
+
+    async fn sell_row(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+    ) -> sqlx::Result<Option<SellRow>>;
+
+    async fn sell_save(pool: &Pool<Db>, row: SellRow) -> sqlx::Result<AnyQueryResult>;
+}
+
 impl Commands {
     pub async fn shop<
         Db: Database,
         GoalsHandler: GoalsManager<Db>,
-        BuyHandler: BuyManager<Db>,
-        ListHandler: ListManager<Db>,
-        SaleHandler: SellManager<Db>,
+        ShopHandler: ShopManager<Db>,
     >(
         ctx: &Context,
         interaction: &CommandInteraction,
@@ -38,9 +58,9 @@ impl Commands {
         };
 
         match command.name {
-            "list" => list::<Db, ListHandler>(ctx, interaction, pool).await?,
-            "buy" => buy::<Db, GoalsHandler, BuyHandler>(ctx, interaction, pool, options).await?,
-            "sell" => sell::<Db, SaleHandler>(ctx, interaction, pool, options).await?,
+            "list" => list::<Db, ShopHandler>(ctx, interaction, pool).await?,
+            "buy" => buy::<Db, GoalsHandler, ShopHandler>(ctx, interaction, pool, options).await?,
+            "sell" => sell::<Db, ShopHandler>(ctx, interaction, pool, options).await?,
             _ => unreachable!("Invalid subcommand name"),
         };
 

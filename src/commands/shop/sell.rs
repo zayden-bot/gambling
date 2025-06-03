@@ -1,23 +1,15 @@
-use async_trait::async_trait;
 use serenity::all::{
     CommandInteraction, Context, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use sqlx::{Database, Pool};
 use zayden_core::{FormatNum, parse_options};
 
+use crate::commands::shop::ShopManager;
 use crate::models::{GamblingItem, ItemInventory};
 use crate::shop::SALES_TAX;
 use crate::{COIN, Coins, Error, Result, SHOP_ITEMS};
-
-#[async_trait]
-pub trait SellManager<Db: Database> {
-    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<SellRow>>;
-
-    async fn save(pool: &Pool<Db>, row: SellRow) -> sqlx::Result<AnyQueryResult>;
-}
 
 #[derive(FromRow)]
 pub struct SellRow {
@@ -61,7 +53,7 @@ impl ItemInventory for SellRow {
     }
 }
 
-pub async fn sell<Db: Database, Manager: SellManager<Db>>(
+pub async fn sell<Db: Database, Manager: ShopManager<Db>>(
     ctx: &Context,
     interaction: &CommandInteraction,
     pool: &Pool<Db>,
@@ -86,7 +78,7 @@ pub async fn sell<Db: Database, Manager: SellManager<Db>>(
         .expect("Preset choices so item should always exist");
     let payment = ((item.coin_cost().unwrap() as f64) * (amount as f64) * (1.0 - SALES_TAX)) as i64;
 
-    let mut row = match Manager::row(pool, interaction.user.id).await.unwrap() {
+    let mut row = match Manager::sell_row(pool, interaction.user.id).await.unwrap() {
         Some(row) => row,
         None => SellRow::new(interaction.user.id),
     };
@@ -107,7 +99,7 @@ pub async fn sell<Db: Database, Manager: SellManager<Db>>(
     let quantity = row.edit_item_quantity(item.id, -amount).unwrap();
 
     *row.coins_mut() += payment;
-    Manager::save(pool, row).await.unwrap();
+    Manager::sell_save(pool, row).await.unwrap();
 
     interaction
         .edit_response(

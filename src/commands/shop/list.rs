@@ -10,13 +10,12 @@ use serenity::all::{
 use sqlx::{Database, FromRow, Pool, any::AnyQueryResult, types::Json};
 
 use crate::{
-    COIN, Coins, GamblingItem, ItemInventory, Result, SHOP_ITEMS, ShopPage, shop::SALES_TAX,
+    COIN, Coins, GamblingItem, ItemInventory, Result, SHOP_ITEMS, ShopPage,
+    commands::shop::ShopManager, shop::SALES_TAX,
 };
 
 #[async_trait]
 pub trait ListManager<Db: Database> {
-    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<ListRow>>;
-
     async fn save(pool: &Pool<Db>, row: ListRow) -> sqlx::Result<AnyQueryResult>;
 }
 
@@ -62,12 +61,12 @@ impl ItemInventory for ListRow {
     }
 }
 
-pub async fn list<Db: Database, Manager: ListManager<Db>>(
+pub async fn list<Db: Database, Manager: ShopManager<Db>>(
     ctx: &Context,
     interaction: &CommandInteraction,
     pool: &Pool<Db>,
 ) -> Result<()> {
-    let row = match Manager::row(pool, interaction.user.id).await.unwrap() {
+    let row = match Manager::list_row(pool, interaction.user.id).await.unwrap() {
         Some(row) => row,
         None => ListRow::new(interaction.user.id),
     };
