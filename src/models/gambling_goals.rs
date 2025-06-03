@@ -2,6 +2,8 @@ use chrono::{NaiveDate, Utc};
 use serenity::all::UserId;
 use sqlx::FromRow;
 
+use crate::FormatNum;
+
 use super::super::goals::GOAL_REGISTRY;
 
 #[derive(FromRow)]
@@ -64,6 +66,10 @@ impl GamblingGoalsRow {
             self.goal_id.clone()
         };
 
-        format!("**{title}**\nProgress: `{}/{}`", self.progress, self.target)
+        format!(
+            "**{title}**\nProgress: `{}/{}`",
+            self.progress.format(),
+            self.target.format()
+        )
     }
 }

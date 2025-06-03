@@ -4,9 +4,9 @@ use std::sync::LazyLock;
 use rand::rng;
 use rand::seq::IteratorRandom;
 
-use crate::GamblingGoalsRow;
 use crate::events::{Event, EventRow};
 use crate::shop::LOTTO_TICKET;
+use crate::{FormatNum, GamblingGoalsRow};
 
 #[derive(Clone, Copy)]
 pub struct GoalDefinition {
@@ -73,8 +73,8 @@ const GIFT: GoalDefinition = GoalDefinition::new("gift")
     });
 
 const WIN_10: GoalDefinition = GoalDefinition::new("gift")
-    .set_target(|_| 10)
-    .set_description(|_| String::from("Win 10 times"))
+    .set_target(|_| rand::random_range(7..=10))
+    .set_description(|t| format!("Win {t} times"))
     .set_update_fn(|goal: &mut GamblingGoalsRow, event: &Event| {
         let Event::GameEnd(event) = event else {
             return false;
@@ -106,7 +106,7 @@ const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
 
 const WIN_MAX_BET: GoalDefinition = GoalDefinition::new("winmaxbet")
     .set_target(|row| row.max_bet())
-    .set_description(|t| format!("Win {t} coins"))
+    .set_description(|t| format!("Win {} coins", t.format()))
     .set_update_fn(|goal, event| {
         let Event::GameEnd(event) = event else {
             return false;
@@ -139,7 +139,7 @@ const WIN_3_ROW: GoalDefinition = GoalDefinition::new("win3row")
 
 const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
     .set_target(|row| row.coins().max(1000).min(row.max_bet()))
-    .set_description(|t| format!("Go all in ({t})"))
+    .set_description(|t| format!("Go all in ({})", t.format()))
     .set_update_fn(|goal, event| {
         let Event::GameEnd(event) = event else {
             return false;
@@ -152,7 +152,7 @@ const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
 
 const SEND_COINS: GoalDefinition = GoalDefinition::new("sendcoins")
     .set_target(|row| (row.coins() / 2).min(row.max_bet() / 2).max(2500))
-    .set_description(|t| format!("Send coins ({t})"))
+    .set_description(|t| format!("Send coins ({})", t.format()))
     .set_update_fn(|goal, event| {
         let Event::Send(event) = event else {
             return false;
