@@ -68,7 +68,9 @@ impl FormatNum for i64 {
             run_core_algorithm(n, &mut buf);
         }
 
-        std::str::from_utf8(&*buf).unwrap().to_string()
+        std::str::from_utf8(&buf[buf.pos..buf.end])
+            .unwrap()
+            .to_string()
     }
 }
 
