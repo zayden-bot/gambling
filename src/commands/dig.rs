@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
 use rand::rng;
 use rand_distr::{Binomial, Distribution};
 use serenity::all::{
@@ -12,7 +11,7 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 
 use crate::events::{Dispatch, Event};
 use crate::shop::ShopCurrency;
-use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Work};
+use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Stamina};
 
 use super::Commands;
 
@@ -44,12 +43,12 @@ pub trait DigManager<Db: Database> {
     async fn save(pool: &Pool<Db>, row: DigRow) -> sqlx::Result<AnyQueryResult>;
 }
 
-#[derive(FromRow)]
+#[derive(Debug, FromRow)]
 pub struct DigRow {
     pub id: i64,
     pub coins: i64,
     pub gems: i64,
-    pub work: NaiveDateTime,
+    pub stamina: i32,
     pub level: i32,
     pub miners: i64,
     pub coal: i64,
@@ -69,7 +68,7 @@ impl DigRow {
             id: id.get() as i64,
             coins: 0,
             gems: 0,
-            work: NaiveDateTime::default(),
+            stamina: 0,
             level: 0,
             miners: 0,
             coal: 0,
@@ -103,13 +102,13 @@ impl Gems for DigRow {
     }
 }
 
-impl Work for DigRow {
-    fn work(&self) -> chrono::NaiveDateTime {
-        self.work
+impl Stamina for DigRow {
+    fn stamina(&self) -> i32 {
+        self.stamina
     }
 
-    fn update_work(&mut self) {
-        self.work = Utc::now().naive_utc()
+    fn stamina_mut(&mut self) -> &mut i32 {
+        &mut self.stamina
     }
 }
 
@@ -167,7 +166,7 @@ impl Commands {
             .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
 
-        row.update_work();
+        row.done_work();
 
         DigHandler::save(pool, row).await.unwrap();
 

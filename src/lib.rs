@@ -11,6 +11,7 @@ mod format_num;
 mod goals;
 mod models;
 pub mod shop;
+pub mod stamina;
 
 pub use commands::Commands;
 pub use commands::goals::GoalsManager;
@@ -20,6 +21,7 @@ pub use format_num::FormatNum;
 pub use goals::GoalHandler;
 pub use models::*;
 use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
+pub use stamina::{StaminaCron, StaminaManager};
 
 const SUPER_USER: UserId = UserId::new(211486447369322506);
 

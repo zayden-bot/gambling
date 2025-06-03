@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
 use serenity::all::{
     Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
     UserId,
@@ -9,7 +8,7 @@ use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
 
 use crate::events::{Dispatch, Event};
-use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Work};
+use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Stamina};
 
 use super::Commands;
 
@@ -18,7 +17,7 @@ pub struct WorkRow {
     pub id: i64,
     pub coins: i64,
     pub gems: i64,
-    pub work: NaiveDateTime,
+    pub stamina: i32,
     pub level: i32,
 }
 
@@ -30,7 +29,7 @@ impl WorkRow {
             id: id.get() as i64,
             coins: 0,
             gems: 0,
-            work: NaiveDateTime::default(),
+            stamina: 0,
             level: 0,
         }
     }
@@ -56,13 +55,13 @@ impl Gems for WorkRow {
     }
 }
 
-impl Work for WorkRow {
-    fn work(&self) -> NaiveDateTime {
-        self.work
+impl Stamina for WorkRow {
+    fn stamina(&self) -> i32 {
+        self.stamina
     }
 
-    fn update_work(&mut self) {
-        self.work = Utc::now().naive_utc()
+    fn stamina_mut(&mut self) -> &mut i32 {
+        &mut self.stamina
     }
 }
 
@@ -110,7 +109,7 @@ impl Commands {
             .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
 
-        row.update_work();
+        row.done_work();
 
         WorkHandler::save(pool, row).await.unwrap();
 

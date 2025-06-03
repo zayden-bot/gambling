@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{Duration, NaiveDateTime, Utc};
+use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 
 mod gambling_effects;
 mod gambling_goals;
@@ -42,17 +42,30 @@ pub trait Gems {
     }
 }
 
-pub trait Work {
-    fn work(&self) -> NaiveDateTime;
+pub trait Stamina {
+    fn stamina(&self) -> i32;
 
-    fn update_work(&mut self);
+    fn stamina_mut(&mut self) -> &mut i32;
+
+    fn done_work(&mut self) {
+        *self.stamina_mut() -= 1
+    }
 
     fn verify_work(&self) -> Result<()> {
-        let now = Utc::now().naive_utc();
-        let break_over = self.work() + Duration::minutes(10);
+        if self.stamina() <= 0 {
+            let now = Utc::now();
 
-        if break_over >= now {
-            return Err(Error::WorkClaimed(break_over.and_utc().timestamp()));
+            let target_minute_value = ((now.minute() / 10) + 1) * 10;
+
+            let next_timestamp = now
+                .with_minute(target_minute_value)
+                .unwrap()
+                .with_second(0)
+                .unwrap()
+                .with_nanosecond(0)
+                .unwrap();
+
+            return Err(Error::WorkClaimed(next_timestamp.timestamp()));
         }
 
         Ok(())
