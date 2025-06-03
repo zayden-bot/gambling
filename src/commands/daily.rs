@@ -6,7 +6,7 @@ use serenity::all::{
 };
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 
-use crate::{COIN, Coins, Error, Result, START_AMOUNT};
+use crate::{COIN, Coins, Error, FormatNum, Result, START_AMOUNT};
 
 use super::Commands;
 
@@ -77,7 +77,10 @@ impl Commands {
         Manager::save(pool, row).await.unwrap();
 
         let embed = CreateEmbed::new()
-            .description(format!("Collected {START_AMOUNT} <:coin:{COIN}>",))
+            .description(format!(
+                "Collected {} <:coin:{COIN}>",
+                START_AMOUNT.format()
+            ))
             .colour(Colour::GOLD);
 
         interaction
