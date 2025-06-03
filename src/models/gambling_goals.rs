@@ -66,14 +66,11 @@ impl GamblingGoalsRow {
             self.goal_id.clone()
         };
 
-        let desc = format!(
-            "**{title}**\nProgress: `{}/{}`",
-            self.progress.format(),
-            self.target.format()
-        );
+        let progress_str = self.progress.format();
+        let target_str = self.target.format();
 
-        println!("{:?}", desc);
+        println!("{:?}", progress_str);
 
-        desc
+        format!("**{title}**\nProgress: `{progress_str}/{target_str}`")
     }
 }
