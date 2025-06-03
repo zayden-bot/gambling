@@ -55,9 +55,10 @@ pub trait Stamina {
         if self.stamina() <= 0 {
             let now = Utc::now();
 
-            let target_minute_value = ((now.minute() / 10) + 1) * 10;
-
-            println!("{}", target_minute_value);
+            let mut target_minute_value = ((now.minute() / 10) + 1) * 10;
+            if target_minute_value == 60 {
+                target_minute_value = 0;
+            }
 
             let next_timestamp = now
                 .with_minute(target_minute_value)
