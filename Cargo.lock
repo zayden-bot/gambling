@@ -528,6 +528,7 @@ dependencies = [
  "levels",
  "rand 0.9.1",
  "rand_distr",
+ "serde",
  "serenity",
  "sqlx",
  "zayden-core",

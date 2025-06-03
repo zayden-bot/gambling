@@ -1,8 +1,9 @@
+use serde::Deserialize;
 use sqlx::FromRow;
 
 use crate::ShopItem;
 
-#[derive(FromRow)]
+#[derive(FromRow, Deserialize)]
 pub struct GamblingItem {
     pub quantity: i64,
     pub item_id: String,
