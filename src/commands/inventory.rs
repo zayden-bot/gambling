@@ -11,8 +11,7 @@ use zayden_core::parse_options;
 
 use crate::shop::{LUCKY_CHIP, SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
 use crate::{
-    COIN, Coins, EffectsManager, Error, GEM, GamblingItem, Gems, ItemInventory, MiningInventory,
-    Result,
+    COIN, Coins, EffectsManager, Error, GEM, GamblingItem, Gems, ItemInventory, Mining, Result,
 };
 
 use super::Commands;
@@ -108,7 +107,11 @@ impl ItemInventory for InventoryRow {
     }
 }
 
-impl MiningInventory for InventoryRow {
+impl Mining for InventoryRow {
+    fn miners(&self) -> i64 {
+        unimplemented!()
+    }
+
     fn mines(&self) -> i64 {
         unimplemented!()
     }

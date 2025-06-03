@@ -5,11 +5,12 @@ use serenity::all::EmojiId;
 use serenity::all::UserId;
 
 pub mod commands;
-mod error;
-mod events;
-mod format_num;
-mod goals;
-mod models;
+pub mod error;
+pub mod events;
+pub mod format_num;
+pub mod goals;
+pub mod mine;
+pub mod models;
 pub mod shop;
 pub mod stamina;
 
@@ -19,8 +20,9 @@ pub use error::Error;
 use error::Result;
 pub use format_num::FormatNum;
 pub use goals::GoalHandler;
+pub use mine::MineManager;
 pub use models::*;
-use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
+pub use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
 pub use stamina::{StaminaCron, StaminaManager};
 
 const SUPER_USER: UserId = UserId::new(211486447369322506);

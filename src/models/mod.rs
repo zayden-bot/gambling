@@ -97,7 +97,9 @@ pub trait ItemInventory {
     }
 }
 
-pub trait MiningInventory {
+pub trait Mining {
+    fn miners(&self) -> i64;
+
     fn mines(&self) -> i64;
 
     fn land(&self) -> i64;
@@ -174,6 +176,41 @@ pub trait MiningInventory {
         ])
     }
 
+    fn units(&self) -> String {
+        let max_values = self.max_values();
+
+        let max_miners = max_values.get("miner").unwrap();
+        let max_mines = max_values.get("mine").unwrap();
+        let max_land = max_values.get("land").unwrap();
+        let max_countries = max_values.get("country").unwrap();
+        let max_continents = max_values.get("continent").unwrap();
+        let max_planets = max_values.get("planet").unwrap();
+        let max_solar_systems = max_values.get("solar_system").unwrap();
+        let max_galaxies = max_values.get("galaxy").unwrap();
+        let max_universes = max_values.get("universe").unwrap();
+
+        format!(
+            "`{}/{max_miners}` miners
+        `{}/{max_mines}` mines
+        `{}/{max_land}` plots of land
+        `{}/{max_countries}` countries
+        `{}/{max_continents}` continents
+        `{}/{max_planets}` planets
+        `{}/{max_solar_systems}` solar systems
+        `{}/{max_galaxies}` galaxies
+        `{}/{max_universes}` universes",
+            self.miners(),
+            self.mines(),
+            self.land(),
+            self.countries(),
+            self.continents(),
+            self.planets(),
+            self.solar_systems(),
+            self.galaxies(),
+            self.universes(),
+        )
+    }
+
     fn resources(&self) -> String {
         format!(
             "{} `{}` coal
@@ -209,6 +246,14 @@ pub trait MiningInventory {
             self.utility().format(),
             self.production().format()
         )
+    }
+
+    fn hourly(&self) -> i64 {
+        if self.miners() <= 0 {
+            return 0;
+        }
+
+        self.miners() * 10
     }
 }
 

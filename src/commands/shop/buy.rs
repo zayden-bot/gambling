@@ -9,7 +9,7 @@ use crate::{
     Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, Result, SHOP_ITEMS, SUPER_USER,
     ShopCurrency, ShopItem, ShopPage,
     events::{Dispatch, Event, ShopPurchaseEvent},
-    models::{GamblingItem, MiningInventory},
+    models::{GamblingItem, Mining},
 };
 
 #[async_trait]
@@ -101,7 +101,11 @@ impl ItemInventory for BuyRow {
     }
 }
 
-impl MiningInventory for BuyRow {
+impl Mining for BuyRow {
+    fn miners(&self) -> i64 {
+        self.miners
+    }
+
     fn mines(&self) -> i64 {
         self.mines
     }

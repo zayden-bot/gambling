@@ -8,6 +8,7 @@ pub mod higher_lower;
 pub mod inventory;
 pub mod leaderboard;
 pub mod lotto;
+pub mod mine;
 pub mod profile;
 pub mod roll;
 pub mod rps;
