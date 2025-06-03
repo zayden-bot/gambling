@@ -15,7 +15,7 @@ pub trait MineManager<Db: Database> {
 #[derive(Default, FromRow)]
 pub struct MineRow {
     pub miners: i64,
-    pub mine: i64,
+    pub mines: i64,
     pub land: i64,
     pub countries: i64,
     pub continents: i64,
@@ -32,7 +32,7 @@ impl Mining for MineRow {
     }
 
     fn mines(&self) -> i64 {
-        self.mine
+        self.mines
     }
 
     fn land(&self) -> i64 {
