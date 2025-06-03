@@ -22,8 +22,8 @@ pub struct ProfileRow {
     pub coins: i64,
     pub gems: i64,
     pub inventory: Option<Json<Vec<GamblingItem>>>,
-    pub xp: i32,
-    pub level: i32,
+    pub xp: Option<i32>,
+    pub level: Option<i32>,
 }
 
 impl Coins for ProfileRow {
@@ -65,11 +65,11 @@ impl LevelsRow for ProfileRow {
     }
 
     fn xp(&self) -> i32 {
-        self.xp
+        self.xp.unwrap_or_default()
     }
 
     fn level(&self) -> i32 {
-        self.level
+        self.level.unwrap_or_default()
     }
 
     fn total_xp(&self) -> i64 {

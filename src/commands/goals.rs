@@ -27,7 +27,7 @@ pub trait GoalsManager<Db: Database> {
 pub struct GoalsRow {
     pub coins: i64,
     pub gems: i64,
-    pub level: i32,
+    pub level: Option<i32>,
 }
 
 impl Coins for GoalsRow {
@@ -52,7 +52,7 @@ impl Gems for GoalsRow {
 
 impl MaxBet for GoalsRow {
     fn level(&self) -> i32 {
-        self.level
+        self.level.unwrap_or_default()
     }
 }
 

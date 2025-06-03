@@ -18,7 +18,7 @@ pub struct WorkRow {
     pub coins: i64,
     pub gems: i64,
     pub stamina: i32,
-    pub level: i32,
+    pub level: Option<i32>,
 }
 
 impl WorkRow {
@@ -30,7 +30,7 @@ impl WorkRow {
             coins: 0,
             gems: 0,
             stamina: 0,
-            level: 0,
+            level: Some(0),
         }
     }
 }
@@ -67,7 +67,7 @@ impl Stamina for WorkRow {
 
 impl MaxBet for WorkRow {
     fn level(&self) -> i32 {
-        self.level
+        self.level.unwrap_or_default()
     }
 }
 

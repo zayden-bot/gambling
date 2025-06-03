@@ -49,7 +49,7 @@ pub struct DigRow {
     pub coins: i64,
     pub gems: i64,
     pub stamina: i32,
-    pub level: i32,
+    pub level: Option<i32>,
     pub miners: i64,
     pub coal: i64,
     pub iron: i64,
@@ -69,7 +69,7 @@ impl DigRow {
             coins: 0,
             gems: 0,
             stamina: 0,
-            level: 0,
+            level: Some(0),
             miners: 0,
             coal: 0,
             iron: 0,
@@ -114,7 +114,7 @@ impl Stamina for DigRow {
 
 impl MaxBet for DigRow {
     fn level(&self) -> i32 {
-        self.level
+        self.level.unwrap_or_default()
     }
 }
 

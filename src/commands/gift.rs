@@ -39,7 +39,7 @@ pub struct SenderRow {
     pub coins: i64,
     pub gems: i64,
     pub gift: NaiveDate,
-    pub level: i32,
+    pub level: Option<i32>,
 }
 
 impl SenderRow {
@@ -51,7 +51,7 @@ impl SenderRow {
             coins: 0,
             gems: 0,
             gift: NaiveDate::default(),
-            level: 0,
+            level: Some(0),
         }
     }
 }
@@ -78,7 +78,7 @@ impl Gems for SenderRow {
 
 impl MaxBet for SenderRow {
     fn level(&self) -> i32 {
-        self.level
+        self.level.unwrap_or_default()
     }
 }
 
