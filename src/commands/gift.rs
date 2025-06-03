@@ -27,6 +27,7 @@ pub trait GiftManager<Db: Database> {
     async fn add_coins(
         pool: &Pool<Db>,
         id: impl Into<UserId> + Send,
+        amount: i64,
     ) -> sqlx::Result<AnyQueryResult>;
 
     async fn save_sender(pool: &Pool<Db>, row: SenderRow) -> sqlx::Result<AnyQueryResult>;
@@ -140,7 +141,9 @@ impl Commands {
             return Err(Error::GiftUsed(tomorrow(Some(now))));
         }
 
-        GiftHandler::add_coins(pool, recipient.id).await.unwrap();
+        GiftHandler::add_coins(pool, recipient.id, GIFT_AMOUNT)
+            .await
+            .unwrap();
 
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
