@@ -18,11 +18,11 @@ pub trait ProfileManager<Db: Database> {
 
 #[derive(Default)]
 pub struct ProfileRow {
-    coins: i64,
-    gems: i64,
-    inventory: Json<Vec<GamblingItem>>,
-    xp: i32,
-    level: i32,
+    pub coins: i64,
+    pub gems: i64,
+    pub inventory: Json<Vec<GamblingItem>>,
+    pub xp: i32,
+    pub level: i32,
 }
 
 impl Coins for ProfileRow {
