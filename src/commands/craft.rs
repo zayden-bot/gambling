@@ -15,13 +15,14 @@ use super::Commands;
 
 #[async_trait]
 pub trait CraftManager<Db: Database> {
-    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<CraftRow>;
+    async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<CraftRow>>;
 
     async fn save(pool: &Pool<Db>, row: CraftRow) -> sqlx::Result<AnyQueryResult>;
 }
 
 #[derive(FromRow)]
 pub struct CraftRow {
+    pub id: i64,
     pub coal: i64,
     pub iron: i64,
     pub gold: i64,
@@ -34,6 +35,26 @@ pub struct CraftRow {
     pub production: i64,
 }
 
+impl CraftRow {
+    pub fn new(id: impl Into<UserId>) -> Self {
+        let id = id.into();
+
+        Self {
+            id: id.get() as i64,
+            coal: 0,
+            iron: 0,
+            gold: 0,
+            redstone: 0,
+            lapis: 0,
+            diamonds: 0,
+            emeralds: 0,
+            tech: 0,
+            utility: 0,
+            production: 0,
+        }
+    }
+}
+
 impl Commands {
     pub async fn craft<Db: Database, Manager: CraftManager<Db>>(
         ctx: &Context,
@@ -43,7 +64,10 @@ impl Commands {
     ) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
-        let mut row = Manager::row(pool, interaction.user.id).await.unwrap();
+        let mut row = Manager::row(pool, interaction.user.id)
+            .await
+            .unwrap()
+            .unwrap_or_else(|| CraftRow::new(interaction.user.id));
 
         let mut options = parse_options(options);
 

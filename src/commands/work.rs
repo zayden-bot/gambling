@@ -89,7 +89,7 @@ impl Commands {
         interaction: &CommandInteraction,
         pool: &Pool<Db>,
     ) -> Result<()> {
-        interaction.defer(ctx).await.unwrap();
+        interaction.defer(ctx).await?;
 
         let mut row = match WorkHandler::row(pool, interaction.user.id).await.unwrap() {
             Some(row) => row,
