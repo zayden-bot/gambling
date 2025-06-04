@@ -1,3 +1,5 @@
+use zayden_core::FormatNum;
+
 use crate::ShopCurrency;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -35,13 +37,18 @@ impl std::fmt::Display for Error {
             Error::PremiumRequired => write!(f, "Sorry, only supporters can use this option"),
             Error::InsufficientFunds { required, currency } => write!(
                 f,
-                "You do not have enough to make this.\nYou need the following resource: {required} {currency}",
+                "You do not have enough to make this.\nYou need the following resource: {} {currency}",
+                required.format()
             ),
-            Error::MinimumBetAmount(min) => write!(f, "The minimum bet for this game is `{min}`!"),
-            Error::MaximumBetAmount(max) => {
-                write!(f, "The maximum bet you've unlocked is `{max}`!")
+            Error::MinimumBetAmount(min) => {
+                write!(f, "The minimum bet for this game is `{}`!", min.format())
             }
-            Error::MaximumSendAmount(max) => write!(f, "The maximum you can send is `{max}`!"),
+            Error::MaximumBetAmount(max) => {
+                write!(f, "The maximum bet you've unlocked is `{}`!", max.format())
+            }
+            Error::MaximumSendAmount(max) => {
+                write!(f, "The maximum you can send is `{}`!", max.format())
+            }
             Error::DailyClaimed(timestamp) => {
                 write!(f, "You collected today, try again <t:{timestamp}:R>",)
             }
@@ -64,7 +71,8 @@ impl std::fmt::Display for Error {
             Error::ItemNotInInventory => write!(f, "You don't have that item in your inventory."),
             Error::InsufficientItemQuantity(quantity) => write!(
                 f,
-                "Cannot sell that many. You only have {quantity} of this item."
+                "Cannot sell that many. You only have {} of this item.",
+                quantity.format()
             ),
 
             Error::Serenity(e) => unimplemented!("Unhandled Serenity error: {e:?}"),

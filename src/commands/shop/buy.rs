@@ -2,7 +2,7 @@ use serenity::all::{
     CommandInteraction, Context, EditInteractionResponse, ResolvedOption, ResolvedValue, UserId,
 };
 use sqlx::{Database, Pool, prelude::FromRow, types::Json};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::{
     Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, Result, SHOP_ITEMS, SUPER_USER,
@@ -280,15 +280,17 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: ShopM
 
     let cost = costs
         .into_iter()
-        .map(|(cost, currency)| format!("`{}` {}", cost, currency))
+        .map(|(cost, currency)| format!("`{}` {}", cost.format(), currency))
         .collect::<Vec<_>>();
 
     interaction
         .edit_response(
             ctx,
             EditInteractionResponse::new().content(format!(
-                "You bought {amount} {item} for {}\nYou now have {quantity}.",
-                cost.join("\n")
+                "You bought {} {item} for {}\nYou now have {}.",
+                amount.format(),
+                cost.join("\n"),
+                quantity.format()
             )),
         )
         .await?;

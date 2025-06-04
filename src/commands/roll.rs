@@ -38,7 +38,7 @@ impl Commands {
             unreachable!("prediction option is required")
         };
 
-        verify_prediction(prediction, 0, n_sides + 1)?;
+        verify_prediction(prediction, 0, n_sides)?;
 
         let mut row = GameHandler::row(pool, interaction.user.id)
             .await

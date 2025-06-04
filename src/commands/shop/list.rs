@@ -8,6 +8,7 @@ use serenity::all::{
     ReactionType, UserId,
 };
 use sqlx::{Database, FromRow, Pool, any::AnyQueryResult, types::Json};
+use zayden_core::FormatNum;
 
 use crate::{
     COIN, Coins, GamblingItem, ItemInventory, Result, SHOP_ITEMS, ShopPage,
@@ -165,7 +166,7 @@ fn create_embed(category: ShopPage, row: &ListRow) -> CreateEmbed {
                 .cost
                 .iter()
                 .filter_map(|x| x.as_ref())
-                .map(|(cost, currency)| format!("`{}` {}", cost, currency))
+                .map(|(cost, currency)| format!("`{}` {}", cost.format(), currency))
                 .collect::<Vec<_>>();
 
             let mut s = format!("**{item}**");

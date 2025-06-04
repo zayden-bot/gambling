@@ -71,6 +71,8 @@ impl Commands {
             )
             .await?;
 
+        GameHandler::save(pool, row).await?;
+
         let title = if winner == Some(true) {
             "Rock 🪨 Paper 🗞️ Scissors ✂ - You Won!"
         } else if winner == Some(false) {
