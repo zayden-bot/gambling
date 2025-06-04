@@ -152,7 +152,7 @@ const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
     });
 
 const SEND_COINS: GoalDefinition = GoalDefinition::new("sendcoins")
-    .set_target(|row| (row.coins() / 2).min(row.max_bet() / 2).max(2500))
+    .set_target(|row| (row.coins() / 10).min(row.max_bet() / 10).max(2500))
     .set_description(|t| format!("Send coins ({})", t.format()))
     .set_update_fn(|goal, event| {
         let Event::Send(event) = event else {
