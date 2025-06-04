@@ -52,8 +52,8 @@ pub trait Stamina {
     fn stamina_str(&self, timestamp: i64) -> String {
         format!(
             "{}{} (recharge <t:{timestamp}:R>)",
-            "🟩".repeat(self.stamina() as usize),
-            "⬜".repeat((Self::MAX_STAMINA - self.stamina()) as usize)
+            "🟩 ".repeat(self.stamina() as usize),
+            "⬜ ".repeat((Self::MAX_STAMINA - self.stamina()) as usize)
         )
     }
 
