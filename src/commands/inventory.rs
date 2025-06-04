@@ -360,8 +360,26 @@ async fn use_item<
         _ => 1,
     };
 
-    let quantity =
-        InventoryHandler::edit_item_quantity(pool, interaction.user.id, item_id, amount).await?;
+    if amount < 0 {
+        return Err(Error::NegativeAmount);
+    }
+
+    if amount == 0 {
+        return Err(Error::ZeroAmount);
+    }
+
+    let quantity = match InventoryHandler::edit_item_quantity(
+        pool,
+        interaction.user.id,
+        item_id,
+        amount,
+    )
+    .await
+    {
+        Ok(q) => q,
+        Err(sqlx::Error::RowNotFound) => return Err(Error::InvalidAmount),
+        r => r?,
+    };
 
     let mut tx = pool.begin().await.unwrap();
 
