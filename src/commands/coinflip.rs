@@ -71,7 +71,9 @@ impl Commands {
 
         GameHandler::save(pool, row).await.unwrap();
 
-        let (coin, title) = if winner {
+        let (coin, title) = if payout == bet * 1000 {
+            (prediction, "Coin Flip - EDGE ROLL!")
+        } else if winner {
             (prediction, "Coin Flip - You Won!")
         } else {
             (prediction.opposite(), "Coin Flip - You Lost!")
