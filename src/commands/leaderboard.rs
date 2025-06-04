@@ -387,9 +387,9 @@ async fn get_rows<Db: Database, Manager: LeaderboardManager<Db>>(
     match leaderboard {
         "networth" => Manager::networth(pool, users, page_num).await.unwrap(),
         "coins" => Manager::coins(pool, users, page_num).await.unwrap(),
-        "gem" => Manager::gems(pool, users, page_num).await.unwrap(),
-        "eggplant" => Manager::eggplants(pool, users, page_num).await.unwrap(),
-        "lottoticket" => Manager::lottotickets(pool, users, page_num).await.unwrap(),
+        "gems" => Manager::gems(pool, users, page_num).await.unwrap(),
+        "eggplants" => Manager::eggplants(pool, users, page_num).await.unwrap(),
+        "lottotickets" => Manager::lottotickets(pool, users, page_num).await.unwrap(),
         _ => unreachable!("Invalid leaderboard option"),
     }
 }
@@ -401,12 +401,12 @@ async fn get_row_number<Db: Database, Manager: LeaderboardManager<Db>>(
 ) -> Option<i64> {
     match leaderboard {
         "coins" => Manager::coins_row_number(pool, user).await.ok().flatten(),
-        "gem" => Manager::gems_row_number(pool, user).await.ok().flatten(),
-        "eggplant" => Manager::eggplants_row_number(pool, user)
+        "gems" => Manager::gems_row_number(pool, user).await.ok().flatten(),
+        "eggplants" => Manager::eggplants_row_number(pool, user)
             .await
             .ok()
             .flatten(),
-        "lottoticket" => Manager::lottotickets_row_number(pool, user)
+        "lottotickets" => Manager::lottotickets_row_number(pool, user)
             .await
             .ok()
             .flatten(),
