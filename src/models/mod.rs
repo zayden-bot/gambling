@@ -276,7 +276,7 @@ pub trait VerifyBet: Coins + MaxBet {
         }
 
         let max = self.max_bet();
-        if bet > max && bet != self.coins() {
+        if bet > max {
             return Err(Error::MaximumBetAmount(max));
         }
 
