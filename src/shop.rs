@@ -273,7 +273,7 @@ pub const LOTTO_TICKET: ShopItem = ShopItem::new(
 pub const EGGPLANT: ShopItem = ShopItem::new(
     "eggplant",
     "Eggplant",
-    "�",
+    "🍆",
     10000,
     ShopCurrency::Coins,
     ShopPage::Item,
