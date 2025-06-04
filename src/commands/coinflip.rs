@@ -51,7 +51,7 @@ impl Commands {
         let winner = rand::random_bool(0.5);
 
         if rand::random_bool(1.0 / 6000.0) {
-            payout *= 5000;
+            payout *= 1000;
         } else if !winner {
             payout = -payout;
         }
