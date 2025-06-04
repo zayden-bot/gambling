@@ -60,6 +60,12 @@ impl MaxBet for SendRow {
 pub trait SendManager<Db: Database> {
     async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<SendRow>>;
 
+    async fn add_coins(
+        pool: &Pool<Db>,
+        id: impl Into<UserId> + Send,
+        amount: i64,
+    ) -> sqlx::Result<AnyQueryResult>;
+
     async fn save(pool: &Pool<Db>, row: SendRow) -> sqlx::Result<AnyQueryResult>;
 }
 
@@ -90,39 +96,36 @@ impl Commands {
             return Err(Error::NegativeAmount);
         }
 
-        let mut user_row = match SendHandler::row(pool, interaction.user.id).await.unwrap() {
+        let mut row = match SendHandler::row(pool, interaction.user.id).await.unwrap() {
             Some(row) => row,
             None => SendRow::new(interaction.user.id),
         };
 
-        if user_row.coins() < amount {
+        if row.coins() < amount {
             return Err(Error::InsufficientFunds {
-                required: amount - user_row.coins(),
+                required: amount - row.coins(),
                 currency: ShopCurrency::Coins,
             });
         }
 
-        let max_send = user_row.max_bet();
+        let max_send = row.max_bet();
         if amount > max_send {
             return Err(Error::MaximumSendAmount(max_send));
         }
 
-        *user_row.coins_mut() -= amount;
+        *row.coins_mut() -= amount;
 
-        let mut recipient_row = match SendHandler::row(pool, recipient.id).await.unwrap() {
-            Some(row) => row,
-            None => SendRow::new(interaction.user.id),
-        };
-
-        *recipient_row.coins_mut() += amount;
+        SendHandler::add_coins(pool, recipient.id, amount).await?;
 
         Dispatch::<Db, GoalHandler>::new(pool)
             .fire(
-                &mut user_row,
+                &mut row,
                 Event::Send(SendEvent::new(amount, interaction.user.id)),
             )
             .await
             .unwrap();
+
+        SendHandler::save(pool, row).await?;
 
         let embed = CreateEmbed::new().description(format!(
             "You sent {} <:coin:{COIN}> to {}",
