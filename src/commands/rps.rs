@@ -6,7 +6,7 @@ use serenity::all::{
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
@@ -90,9 +90,11 @@ impl Commands {
         };
 
         let desc = format!(
-            "Your bet: {bet} <:coin:{COIN}>\n\n**You picked:** {}\n**Zayden picked:** {}\n\n{result}\nYour coins: {coins}",
+            "Your bet: {} <:coin:{COIN}>\n\n**You picked:** {}\n**Zayden picked:** {}\n\n{result}\nYour coins: {}",
+            bet.format(),
             user_choice.as_emoji(),
             computer_choice.as_emoji(),
+            coins.format()
         );
 
         let colour = if winner == Some(true) {
