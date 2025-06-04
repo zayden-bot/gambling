@@ -136,7 +136,7 @@ impl Commands {
             .unwrap()
             .unwrap_or_else(|| DigRow::new(interaction.user.id));
 
-        row.verify_work::<Db, StaminaHandler>()?;
+        let timestamp = row.verify_work::<Db, StaminaHandler>()?;
 
         let mut resources = HashMap::from([
             ("coal", 0),
@@ -173,32 +173,42 @@ impl Commands {
 
         row.done_work();
 
+        let stamina = if row.stamina() == 0 {
+            format!("Time for a break. Come back <t:{timestamp}:R>")
+        } else {
+            "⛏️ ".repeat(row.stamina() as usize)
+        };
+
         DigHandler::save(pool, row).await.unwrap();
 
         let embed = CreateEmbed::new()
-            .description(format!("You dug around in the mines and found:\n{}", {
-                let found = resources
-                    .drain()
-                    .filter(|(_, v)| *v > 0)
-                    .map(|(k, v)| match k {
-                        "coal" => (ShopCurrency::Coal, v, k),
-                        "iron" => (ShopCurrency::Iron, v, k),
-                        "gold" => (ShopCurrency::Gold, v, k),
-                        "redstone" => (ShopCurrency::Redstone, v, k),
-                        "lapis" => (ShopCurrency::Lapis, v, k),
-                        "diamonds" => (ShopCurrency::Diamonds, v, k),
-                        "emeralds" => (ShopCurrency::Emeralds, v, k),
-                        s => unreachable!("Invalid resource: {s}"),
-                    })
-                    .map(|(currency, amount, name)| format!("{currency} `{amount}` {name}",))
-                    .collect::<Vec<_>>();
+            .description(format!(
+                "You dug around in the mines and found:\n{}\nStamina: {}",
+                {
+                    let found = resources
+                        .drain()
+                        .filter(|(_, v)| *v > 0)
+                        .map(|(k, v)| match k {
+                            "coal" => (ShopCurrency::Coal, v, k),
+                            "iron" => (ShopCurrency::Iron, v, k),
+                            "gold" => (ShopCurrency::Gold, v, k),
+                            "redstone" => (ShopCurrency::Redstone, v, k),
+                            "lapis" => (ShopCurrency::Lapis, v, k),
+                            "diamonds" => (ShopCurrency::Diamonds, v, k),
+                            "emeralds" => (ShopCurrency::Emeralds, v, k),
+                            s => unreachable!("Invalid resource: {s}"),
+                        })
+                        .map(|(currency, amount, name)| format!("{currency} `{amount}` {name}",))
+                        .collect::<Vec<_>>();
 
-                if found.is_empty() {
-                    String::from("Just a whole lot of boring stone...")
-                } else {
-                    found.join("\n")
-                }
-            }))
+                    if found.is_empty() {
+                        String::from("Just a whole lot of boring stone...")
+                    } else {
+                        found.join("\n")
+                    }
+                },
+                stamina
+            ))
             .color(Colour::GOLD);
 
         interaction

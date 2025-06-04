@@ -96,7 +96,7 @@ impl Commands {
             None => WorkRow::new(interaction.user.id),
         };
 
-        row.verify_work::<Db, StaminaHandler>()?;
+        let timestamp = row.verify_work::<Db, StaminaHandler>()?;
 
         let amount = rand::random_range(100..=500);
         *row.coins_mut() += amount;
@@ -116,11 +116,17 @@ impl Commands {
 
         row.done_work();
 
+        let stamina = if row.stamina() == 0 {
+            format!("Time for a break. Come back <t:{timestamp}:R>")
+        } else {
+            "⛏️ ".repeat(row.stamina() as usize)
+        };
+
         WorkHandler::save(pool, row).await.unwrap();
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "Collected {amount} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}"
+                "Collected {amount} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}\nStamina: {stamina}"
             ))
             .colour(Colour::GOLD);
 

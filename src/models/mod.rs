@@ -53,19 +53,19 @@ pub trait Stamina {
         *self.stamina_mut() -= 1
     }
 
-    fn verify_work<Db: Database, Manager: StaminaManager<Db>>(&self) -> Result<()> {
-        if self.stamina() <= 0 {
-            let next_timestamp = StaminaCron::cron_job::<Db, Manager>()
-                .schedule
-                .upcoming(chrono::Utc)
-                .next()
-                .unwrap_or_default()
-                .timestamp();
+    fn verify_work<Db: Database, Manager: StaminaManager<Db>>(&self) -> Result<i64> {
+        let next_timestamp = StaminaCron::cron_job::<Db, Manager>()
+            .schedule
+            .upcoming(chrono::Utc)
+            .next()
+            .unwrap_or_default()
+            .timestamp();
 
+        if self.stamina() <= 0 {
             return Err(Error::WorkClaimed(next_timestamp));
         }
 
-        Ok(())
+        Ok(next_timestamp)
     }
 }
 
