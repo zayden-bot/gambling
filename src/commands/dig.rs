@@ -50,14 +50,14 @@ pub struct DigRow {
     pub gems: i64,
     pub stamina: i32,
     pub level: Option<i32>,
-    pub miners: i64,
-    pub coal: i64,
-    pub iron: i64,
-    pub gold: i64,
-    pub redstone: i64,
-    pub lapis: i64,
-    pub diamonds: i64,
-    pub emeralds: i64,
+    pub miners: Option<i64>,
+    pub coal: Option<i64>,
+    pub iron: Option<i64>,
+    pub gold: Option<i64>,
+    pub redstone: Option<i64>,
+    pub lapis: Option<i64>,
+    pub diamonds: Option<i64>,
+    pub emeralds: Option<i64>,
 }
 
 impl DigRow {
@@ -70,15 +70,37 @@ impl DigRow {
             gems: 0,
             stamina: 0,
             level: Some(0),
-            miners: 0,
-            coal: 0,
-            iron: 0,
-            gold: 0,
-            redstone: 0,
-            lapis: 0,
-            diamonds: 0,
-            emeralds: 0,
+            miners: Some(0),
+            coal: Some(0),
+            iron: Some(0),
+            gold: Some(0),
+            redstone: Some(0),
+            lapis: Some(0),
+            diamonds: Some(0),
+            emeralds: Some(0),
         }
+    }
+
+    fn coal_mut(&mut self) -> &mut i64 {
+        self.coal.get_or_insert_default()
+    }
+    fn iron_mut(&mut self) -> &mut i64 {
+        self.iron.get_or_insert_default()
+    }
+    fn gold_mut(&mut self) -> &mut i64 {
+        self.gold.get_or_insert_default()
+    }
+    fn redstone_mut(&mut self) -> &mut i64 {
+        self.redstone.get_or_insert_default()
+    }
+    fn lapis_mut(&mut self) -> &mut i64 {
+        self.lapis.get_or_insert_default()
+    }
+    fn diamonds_mut(&mut self) -> &mut i64 {
+        self.diamonds.get_or_insert_default()
+    }
+    fn emeralds_mut(&mut self) -> &mut i64 {
+        self.emeralds.get_or_insert_default()
     }
 }
 
@@ -148,7 +170,7 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let num_attempts = (row.miners as u64).saturating_add(10);
+        let num_attempts = (row.miners.unwrap_or_default() as u64).saturating_add(10);
 
         for (resource, chance) in CHANCES.iter() {
             *resources.get_mut(resource).unwrap() += Binomial::new(num_attempts, *chance)
@@ -157,13 +179,13 @@ impl Commands {
         }
 
         resources.iter().for_each(|(&k, &v)| match k {
-            "coal" => row.coal += v,
-            "iron" => row.iron += v,
-            "gold" => row.gold += v,
-            "redstone" => row.redstone += v,
-            "lapis" => row.lapis += v,
-            "diamonds" => row.diamonds += v,
-            "emeralds" => row.emeralds += v,
+            "coal" => *row.coal_mut() += v,
+            "iron" => *row.iron_mut() += v,
+            "gold" => *row.gold_mut() += v,
+            "redstone" => *row.redstone_mut() += v,
+            "lapis" => *row.lapis_mut() += v,
+            "diamonds" => *row.diamonds_mut() += v,
+            "emeralds" => *row.emeralds_mut() += v,
             s => unreachable!("Invalid resource: {s}"),
         });
 
