@@ -50,7 +50,7 @@ impl Commands {
         let mut payout = bet;
         let winner = rand::random_bool(0.5);
 
-        if rand::random_bool(1.0 / 6000.0) {
+        if winner && rand::random_bool(1.0 / 6000.0) {
             payout *= 1000;
         } else if !winner {
             payout = -payout;
