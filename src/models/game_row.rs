@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use serenity::all::UserId;
 use sqlx::{Database, FromRow, Pool, any::AnyQueryResult};
 
@@ -58,10 +58,6 @@ impl Gems for GameRow {
 impl Game for GameRow {
     fn game(&self) -> chrono::NaiveDateTime {
         self.game
-    }
-
-    fn update_game(&mut self) {
-        self.game = Utc::now().naive_utc()
     }
 }
 

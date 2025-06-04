@@ -74,8 +74,6 @@ impl Commands {
 
         *row.coins_mut() -= BUYIN;
 
-        row.update_game();
-
         GameHandler::save(pool, row).await.unwrap();
 
         let (&num, emojis) = NUM_TO_CARDS.iter().choose(&mut rng()).unwrap();

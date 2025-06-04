@@ -297,6 +297,4 @@ pub trait Game {
 
         Ok(())
     }
-
-    fn update_game(&mut self);
 }
