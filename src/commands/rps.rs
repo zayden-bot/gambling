@@ -10,7 +10,7 @@ use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
-    COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result, VerifyBet,
+    COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result, VerifyBet,
 };
 
 use super::Commands;
@@ -44,7 +44,7 @@ impl Commands {
             .await?
             .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
-        row.verify_cooldown()?;
+        GameCache::can_play(ctx, interaction.user.id).await?;
         row.verify_bet(bet)?;
 
         let computer_choice = *CHOICES.choose(&mut rand::rng()).unwrap();
@@ -72,6 +72,7 @@ impl Commands {
             .await?;
 
         GameHandler::save(pool, row).await?;
+        GameCache::update(ctx, interaction.user.id).await;
 
         let title = if winner == Some(true) {
             "Rock 🪨 Paper 🗞️ Scissors ✂ - You Won!"

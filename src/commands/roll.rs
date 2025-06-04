@@ -7,7 +7,8 @@ use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
-    COIN, Coins, EffectsManager, Error, Game, GameManager, GameRow, GoalsManager, Result, VerifyBet,
+    COIN, Coins, EffectsManager, Error, GameCache, GameManager, GameRow, GoalsManager, Result,
+    VerifyBet,
 };
 
 use super::Commands;
@@ -45,7 +46,7 @@ impl Commands {
             .unwrap()
             .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
-        row.verify_cooldown()?;
+        GameCache::can_play(ctx, interaction.user.id).await?;
 
         let Some(ResolvedValue::Integer(bet)) = options.remove("bet") else {
             unreachable!("bet option is required")
@@ -80,6 +81,7 @@ impl Commands {
             .await?;
 
         GameHandler::save(pool, row).await.unwrap();
+        GameCache::update(ctx, interaction.user.id).await;
 
         let desc = format!(
             "Your bet: {} <:coin:{COIN}>\n\n**You picked:** {prediction} 🎲\n**Result:** {roll} 🎲\n\n{result} {}\nYour coins: {}",

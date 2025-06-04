@@ -10,7 +10,8 @@ use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
-    COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result, TAILS, VerifyBet,
+    COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result, TAILS,
+    VerifyBet,
 };
 
 use super::Commands;
@@ -44,7 +45,7 @@ impl Commands {
             .await?
             .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
-        row.verify_cooldown()?;
+        GameCache::can_play(ctx, interaction.user.id).await?;
         row.verify_bet(bet)?;
 
         let mut payout = bet;
@@ -70,6 +71,7 @@ impl Commands {
             .await?;
 
         GameHandler::save(pool, row).await.unwrap();
+        GameCache::update(ctx, interaction.user.id).await;
 
         let (coin, title) = if payout == bet * 1000 {
             (prediction, "Coin Flip - EDGE ROLL!")

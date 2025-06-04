@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use chrono::{Duration, NaiveDateTime, Utc};
-
 mod gambling_effects;
 mod gambling_goals;
 mod gambling_item;
@@ -294,17 +292,3 @@ pub trait VerifyBet: Coins + MaxBet {
 }
 
 impl<T: Coins + MaxBet> VerifyBet for T {}
-
-pub trait Game {
-    fn game(&self) -> NaiveDateTime;
-
-    fn verify_cooldown(&self) -> Result<()> {
-        let cooldown_over = self.game() + Duration::seconds(5);
-
-        if cooldown_over >= Utc::now().naive_utc() {
-            return Err(Error::Cooldown(cooldown_over.and_utc().timestamp()));
-        }
-
-        Ok(())
-    }
-}

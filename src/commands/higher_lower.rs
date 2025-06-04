@@ -18,7 +18,7 @@ use crate::{
     CLUBS_2, CLUBS_3, CLUBS_4, CLUBS_5, CLUBS_6, CLUBS_7, CLUBS_8, CLUBS_9, CLUBS_10, CLUBS_A,
     CLUBS_J, CLUBS_K, CLUBS_Q, Coins, DIAMONDS_2, DIAMONDS_3, DIAMONDS_4, DIAMONDS_5, DIAMONDS_6,
     DIAMONDS_7, DIAMONDS_8, DIAMONDS_9, DIAMONDS_10, DIAMONDS_A, DIAMONDS_J, DIAMONDS_K,
-    DIAMONDS_Q, Error, Game, GameManager, GameRow, GoalsManager, HEARTS_2, HEARTS_3, HEARTS_4,
+    DIAMONDS_Q, Error, GameCache, GameManager, GameRow, GoalsManager, HEARTS_2, HEARTS_3, HEARTS_4,
     HEARTS_5, HEARTS_6, HEARTS_7, HEARTS_8, HEARTS_9, HEARTS_10, HEARTS_A, HEARTS_J, HEARTS_K,
     HEARTS_Q, Result, SPADES_2, SPADES_3, SPADES_4, SPADES_5, SPADES_6, SPADES_7, SPADES_8,
     SPADES_9, SPADES_10, SPADES_A, SPADES_J, SPADES_K, SPADES_Q, ShopCurrency,
@@ -70,7 +70,7 @@ impl Commands {
             });
         }
 
-        row.verify_cooldown()?;
+        GameCache::can_play(ctx, interaction.user.id).await?;
 
         *row.coins_mut() -= BUYIN;
 
@@ -195,6 +195,7 @@ impl Commands {
             .await?;
 
         GameHandler::save(pool, row).await.unwrap();
+        GameCache::update(ctx, interaction.user.id).await;
 
         let result = if payout > 0 {
             format!("Profit: {}", payout.format())

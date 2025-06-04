@@ -1,9 +1,8 @@
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
 use serenity::all::UserId;
 use sqlx::{Database, FromRow, Pool, any::AnyQueryResult};
 
-use super::{Coins, Game, Gems, MaxBet};
+use super::{Coins, Gems, MaxBet};
 
 #[async_trait]
 pub trait GameManager<Db: Database> {
@@ -17,7 +16,6 @@ pub struct GameRow {
     pub id: i64,
     pub coins: i64,
     pub gems: i64,
-    pub game: NaiveDateTime,
     pub level: Option<i32>,
 }
 
@@ -29,7 +27,6 @@ impl GameRow {
             id: id.get() as i64,
             coins: 0,
             gems: 0,
-            game: NaiveDateTime::default(),
             level: Some(0),
         }
     }
@@ -52,12 +49,6 @@ impl Gems for GameRow {
 
     fn gems_mut(&mut self) -> &mut i64 {
         &mut self.gems
-    }
-}
-
-impl Game for GameRow {
-    fn game(&self) -> chrono::NaiveDateTime {
-        self.game
     }
 }
 

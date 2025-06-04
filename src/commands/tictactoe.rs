@@ -12,7 +12,7 @@ use sqlx::{Database, Pool};
 use zayden_core::parse_options;
 
 use crate::{
-    BLANK, COIN, Coins, EffectsManager, Game, GameManager, GameRow, GoalsManager, Result,
+    BLANK, COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result,
     VerifyBet,
     events::{Dispatch, Event, GameEndEvent},
 };
@@ -41,7 +41,7 @@ impl Commands {
             .unwrap()
             .unwrap_or_else(|| GameRow::new(interaction.user.id));
 
-        row.verify_cooldown()?;
+        GameCache::can_play(ctx, interaction.user.id).await?;
 
         let mut options = parse_options(options);
 
@@ -56,6 +56,7 @@ impl Commands {
         row.verify_bet(bet)?;
 
         GameHandler::save(pool, row).await.unwrap();
+        GameCache::update(ctx, interaction.user.id).await;
 
         let embed = CreateEmbed::new().title("TicTacToe").description(format!(
             "{} wants to play tic-tac-toe ({size}x{size}) for **{bet}** <:coin:{COIN}>",
@@ -100,8 +101,10 @@ impl Commands {
         let mut p1_row = state.p1_row(pool).await;
         let mut p2_row = state.p2_row(pool).await;
 
+        let [p1, p2] = state.players;
+
         let embed = if let Some(winner) = state.winner {
-            let row = if state.players[0] == winner {
+            let row = if p1 == winner {
                 &mut p1_row
             } else {
                 &mut p2_row
@@ -113,7 +116,7 @@ impl Commands {
                 .title("TicTacToe")
                 .description(format!("Winner! {} 🎉", winner.mention()))
                 .colour(Colour::DARK_GREEN)
-        } else if state.players[0] == state.players[1] {
+        } else if p1 != p2 {
             p1_row.add_coins(bet);
             p2_row.add_coins(bet);
 
@@ -135,16 +138,22 @@ impl Commands {
         dispatch
             .fire(
                 &mut p1_row,
-                Event::GameEnd(GameEndEvent::new("rps", state.players[0], state.bet)),
+                Event::GameEnd(GameEndEvent::new("rps", p1, state.bet)),
             )
             .await?;
 
         dispatch
             .fire(
                 &mut p2_row,
-                Event::GameEnd(GameEndEvent::new("rps", state.players[1], state.bet)),
+                Event::GameEnd(GameEndEvent::new("rps", p2, state.bet)),
             )
             .await?;
+
+        GameHandler::save(pool, p1_row).await?;
+        GameHandler::save(pool, p2_row).await?;
+
+        GameCache::update(ctx, p1).await;
+        GameCache::update(ctx, p2).await;
 
         interaction
             .edit_response(
