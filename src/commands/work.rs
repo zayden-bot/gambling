@@ -116,11 +116,7 @@ impl Commands {
 
         row.done_work();
 
-        let stamina = if row.stamina() == 0 {
-            format!("Time for a break. Come back <t:{timestamp}:R>")
-        } else {
-            "⛏️ ".repeat(row.stamina() as usize)
-        };
+        let stamina = row.stamina_str(timestamp);
 
         WorkHandler::save(pool, row).await.unwrap();
 

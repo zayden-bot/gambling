@@ -45,7 +45,17 @@ pub trait Gems {
 }
 
 pub trait Stamina {
+    const MAX_STAMINA: i32 = 3;
+
     fn stamina(&self) -> i32;
+
+    fn stamina_str(&self, timestamp: i64) -> String {
+        format!(
+            "{}{} (recharge <t:{timestamp}:R>)",
+            "🟩".repeat(self.stamina() as usize),
+            "⬜".repeat((Self::MAX_STAMINA - self.stamina()) as usize)
+        )
+    }
 
     fn stamina_mut(&mut self) -> &mut i32;
 
