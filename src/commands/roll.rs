@@ -3,7 +3,7 @@ use serenity::all::{
     CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, GameEndEvent};
 use crate::{
@@ -82,7 +82,10 @@ impl Commands {
         GameHandler::save(pool, row).await.unwrap();
 
         let desc = format!(
-            "Your bet: {bet} <:coin:{COIN}>\n\n**You picked:** {prediction} 🎲\n**Result:** {roll} 🎲\n\n{result} {payout}\nYour coins: {coins}",
+            "Your bet: {} <:coin:{COIN}>\n\n**You picked:** {prediction} 🎲\n**Result:** {roll} 🎲\n\n{result} {}\nYour coins: {}",
+            bet.format(),
+            payout.format(),
+            coins.format()
         );
 
         let embed = CreateEmbed::new()
