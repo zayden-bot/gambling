@@ -96,7 +96,7 @@ impl Commands {
             None => WorkRow::new(interaction.user.id),
         };
 
-        let timestamp = row.verify_work::<Db, StaminaHandler>()?;
+        row.verify_work::<Db, StaminaHandler>()?;
 
         let amount = rand::random_range(100..=500);
         *row.coins_mut() += amount;
@@ -116,7 +116,7 @@ impl Commands {
 
         row.done_work();
 
-        let stamina = row.stamina_str(timestamp);
+        let stamina = row.stamina_str();
 
         WorkHandler::save(pool, row).await.unwrap();
 

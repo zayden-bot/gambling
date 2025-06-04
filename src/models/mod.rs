@@ -49,7 +49,7 @@ pub trait Stamina {
 
     fn stamina(&self) -> i32;
 
-    fn stamina_str(&self, timestamp: i64) -> String {
+    fn stamina_str(&self) -> String {
         format!(
             "{}{}",
             "🟩 ".repeat(self.stamina() as usize),
@@ -63,19 +63,19 @@ pub trait Stamina {
         *self.stamina_mut() -= 1
     }
 
-    fn verify_work<Db: Database, Manager: StaminaManager<Db>>(&self) -> Result<i64> {
-        let next_timestamp = StaminaCron::cron_job::<Db, Manager>()
-            .schedule
-            .upcoming(chrono::Utc)
-            .next()
-            .unwrap_or_default()
-            .timestamp();
-
+    fn verify_work<Db: Database, Manager: StaminaManager<Db>>(&self) -> Result<()> {
         if self.stamina() <= 0 {
+            let next_timestamp = StaminaCron::cron_job::<Db, Manager>()
+                .schedule
+                .upcoming(chrono::Utc)
+                .next()
+                .unwrap_or_default()
+                .timestamp();
+
             return Err(Error::WorkClaimed(next_timestamp));
         }
 
-        Ok(next_timestamp)
+        Ok(())
     }
 }
 

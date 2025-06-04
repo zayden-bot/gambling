@@ -158,7 +158,7 @@ impl Commands {
             .unwrap()
             .unwrap_or_else(|| DigRow::new(interaction.user.id));
 
-        let timestamp = row.verify_work::<Db, StaminaHandler>()?;
+        row.verify_work::<Db, StaminaHandler>()?;
 
         let mut resources = HashMap::from([
             ("coal", 0),
@@ -195,7 +195,7 @@ impl Commands {
 
         row.done_work();
 
-        let stamina = row.stamina_str(timestamp);
+        let stamina = row.stamina_str();
 
         DigHandler::save(pool, row).await.unwrap();
 
