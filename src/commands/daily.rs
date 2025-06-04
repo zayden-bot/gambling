@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::{Days, NaiveDate, NaiveTime, Utc};
+use chrono::{NaiveDate, Utc};
 use serenity::all::{
     Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
     UserId,
@@ -7,7 +7,7 @@ use serenity::all::{
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 use zayden_core::FormatNum;
 
-use crate::{COIN, Coins, Error, Result, START_AMOUNT};
+use crate::{COIN, Coins, Error, Result, START_AMOUNT, tomorrow};
 
 use super::Commands;
 
@@ -62,18 +62,12 @@ impl Commands {
 
         let now = Utc::now();
         let today = now.naive_utc().date();
-        let tomorrow = now
-            .with_time(NaiveTime::MIN)
-            .unwrap()
-            .checked_add_days(Days::new(1))
-            .unwrap();
 
         if row.daily == today {
-            return Err(Error::DailyClaimed(tomorrow.timestamp()));
+            return Err(Error::DailyClaimed(tomorrow(Some(now))));
         }
 
         *row.coins_mut() += START_AMOUNT;
-        row.daily = today;
 
         Manager::save(pool, row).await.unwrap();
 
