@@ -264,7 +264,7 @@ pub const LOTTO_TICKET: ShopItem = ShopItem::new(
     "lottoticket",
     "Lottery Ticket",
     "🎟️",
-    5000,
+    5_000,
     ShopCurrency::Coins,
     ShopPage::Item,
 )
@@ -274,7 +274,7 @@ pub const EGGPLANT: ShopItem = ShopItem::new(
     "eggplant",
     "Eggplant",
     "🍆",
-    10000,
+    10_000,
     ShopCurrency::Coins,
     ShopPage::Item,
 )
@@ -285,7 +285,7 @@ const WEAPON_CRATE: ShopItem = ShopItem::new(
     "weaponcrate",
     "Weapon Crate",
     "📦",
-    25000,
+    100_000,
     ShopCurrency::Coins,
     ShopPage::Item,
 )
@@ -411,7 +411,7 @@ const PROFIT_X100: ShopItem = ShopItem::new(
 .duration(Duration::from_secs(60));
 
 //region: Mine
-const MINER_COST: i64 = 1000;
+const MINER_COST: i64 = 1_000;
 const MINE_COST: i64 = MINER_COST * 5;
 const LAND_COST: i64 = MINE_COST * 20;
 const COUNTRY_COST: i64 = LAND_COST * 10;
