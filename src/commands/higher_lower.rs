@@ -173,7 +173,7 @@ impl Commands {
             .unwrap()
             .unwrap();
 
-        row.add_coins(payout + BUYIN);
+        row.add_coins(payout);
 
         let colour = if payout > 0 {
             Colour::DARK_GREEN

@@ -147,7 +147,6 @@ const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
         };
 
         goal.update_progress(event.bet.abs());
-
         goal.is_complete()
     });
 
