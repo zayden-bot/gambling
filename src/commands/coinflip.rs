@@ -48,10 +48,11 @@ impl Commands {
         GameCache::can_play(ctx, interaction.user.id).await?;
         row.verify_bet(bet)?;
 
+        let heads = rand::random_bool(0.5);
         let mut payout = bet;
-        let winner = rand::random_bool(0.5);
+        let winner = matches!(prediction, CoinSide::Heads) && heads;
 
-        if winner && rand::random_bool(1.0 / 6000.0) {
+        if rand::random_bool(1.0 / 6000.0) {
             payout *= 1000;
         } else if !winner {
             payout = -payout;
