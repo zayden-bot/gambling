@@ -29,7 +29,11 @@ pub trait LottoManager<Db: Database> {
 
     async fn delete_tickets(conn: &mut Db::Connection) -> sqlx::Result<AnyQueryResult>;
 
-    async fn save(conn: &mut Db::Connection, row: LottoRow) -> sqlx::Result<AnyQueryResult>;
+    async fn add_coins(
+        conn: &mut Db::Connection,
+        id: impl Into<UserId> + Send,
+        amount: i64,
+    ) -> sqlx::Result<AnyQueryResult>;
 }
 
 #[derive(FromRow)]
@@ -99,21 +103,20 @@ impl Lotto {
             });
 
             Manager::delete_tickets(&mut *tx).await.unwrap();
-            println!("Deleted tickets");
 
-            for (mut winner, share) in winners.into_iter().zip(prize_share) {
+            for (winner, share) in winners.into_iter().zip(prize_share) {
                 let payout = (jackpot as f64 * share) as i64;
 
-                winner.add_coins(payout);
-                let mention = winner.user_id().mention();
-
-                Manager::save(&mut *tx, winner).await.unwrap();
+                Manager::add_coins(&mut *tx, winner.user_id(), payout)
+                    .await
+                    .unwrap();
 
                 CHANNEL_ID
                     .send_message(
                         &ctx,
                         CreateMessage::new().content(format!(
-                            "{mention} has won {} <:coin:{COIN}> from the lottery!",
+                            "{} has won {} <:coin:{COIN}> from the lottery!",
+                            winner.user_id().mention(),
                             payout.format()
                         )),
                     )
@@ -122,7 +125,6 @@ impl Lotto {
             }
 
             tx.commit().await.unwrap();
-            println!("Commited transaction")
         })
     }
 }
