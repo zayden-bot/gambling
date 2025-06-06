@@ -99,6 +99,7 @@ impl Lotto {
             });
 
             Manager::delete_tickets(&mut *tx).await.unwrap();
+            println!("Deleted tickets");
 
             for (mut winner, share) in winners.into_iter().zip(prize_share) {
                 let payout = (jackpot as f64 * share) as i64;
@@ -121,6 +122,7 @@ impl Lotto {
             }
 
             tx.commit().await.unwrap();
+            println!("Commited transaction")
         })
     }
 }
