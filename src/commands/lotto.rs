@@ -73,6 +73,11 @@ impl Coins for LottoRow {
     }
 }
 
+#[inline]
+fn jackpot(tickets: i64) -> i64 {
+    (tickets * LOTTO_TICKET.coin_cost().unwrap()).max(1_000_000)
+}
+
 pub struct Lotto;
 
 impl Lotto {
@@ -91,7 +96,6 @@ impl Lotto {
             }
 
             let total_tickets: i64 = rows.iter().map(|row| row.quantity()).sum();
-            let jackpot = total_tickets * LOTTO_TICKET.coin_cost().unwrap();
 
             let mut dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
 
@@ -103,6 +107,8 @@ impl Lotto {
             });
 
             Manager::delete_tickets(&mut *tx).await.unwrap();
+
+            let jackpot = jackpot(total_tickets);
 
             for (winner, share) in winners.into_iter().zip(prize_share) {
                 let payout = (jackpot as f64 * share) as i64;
