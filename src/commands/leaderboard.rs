@@ -8,13 +8,11 @@ use serenity::all::{
     CreateInteractionResponseMessage, EditInteractionResponse, Mentionable, Message,
     ResolvedOption, ResolvedValue, UserId,
 };
-use sqlx::{Database, Pool, prelude::FromRow, types::Json};
+use sqlx::{Database, Pool, prelude::FromRow};
 use zayden_core::{FormatNum, cache::GuildMembersCache};
 
-use crate::{
-    Coins, GamblingItem, Gems, ItemInventory, Result,
-    shop::{EGGPLANT, LOTTO_TICKET, SHOP_ITEMS},
-};
+use crate::shop::{EGGPLANT, LOTTO_TICKET};
+use crate::{Coins, Gems, Result};
 
 use super::Commands;
 
@@ -77,33 +75,9 @@ pub trait LeaderboardManager<Db: Database> {
 }
 
 #[derive(FromRow)]
-pub struct NetWorthRow {
+pub struct NetworthRow {
     pub id: i64,
-    pub coins: i64,
-    pub inventory: Option<Json<Vec<GamblingItem>>>,
-}
-
-impl Coins for NetWorthRow {
-    fn coins(&self) -> i64 {
-        self.coins
-    }
-
-    fn coins_mut(&mut self) -> &mut i64 {
-        &mut self.coins
-    }
-}
-
-impl ItemInventory for NetWorthRow {
-    fn inventory(&self) -> &[GamblingItem] {
-        match self.inventory.as_ref() {
-            Some(vec_ref) => &vec_ref.0,
-            None => &[],
-        }
-    }
-
-    fn inventory_mut(&mut self) -> &mut Vec<GamblingItem> {
-        self.inventory.get_or_insert_with(|| Json(Vec::new()))
-    }
+    pub networth: Option<i64>,
 }
 
 #[derive(FromRow)]
@@ -320,7 +294,7 @@ async fn run_component<Db: Database, Manager: LeaderboardManager<Db>>(
 }
 
 pub enum LeaderboardRow {
-    NetWorth(NetWorthRow),
+    NetWorth(NetworthRow),
     Coins(CoinsRow),
     Gems(GemsRow),
     Eggplants(EggplantsRow),
@@ -350,22 +324,7 @@ impl LeaderboardRow {
         };
 
         let data = match self {
-            Self::NetWorth(row) => {
-                let items = row
-                    .inventory()
-                    .iter()
-                    .map(|inv_item| {
-                        let item_cost = SHOP_ITEMS
-                            .get(&inv_item.item_id)
-                            .and_then(|item| item.coin_cost())
-                            .unwrap();
-
-                        item_cost * inv_item.quantity
-                    })
-                    .sum::<i64>();
-
-                (row.coins() + items).format()
-            }
+            Self::NetWorth(row) => row.networth.unwrap_or_default().format(),
             Self::Coins(row) => row.coins_str(),
             Self::Gems(row) => row.gems_str(),
             Self::Eggplants(row) => format!("{} {}", row.quantity.format(), EGGPLANT.emoji()),

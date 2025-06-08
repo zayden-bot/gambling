@@ -281,7 +281,7 @@ pub const EGGPLANT: ShopItem = ShopItem::new(
 .description("Who has the biggest eggplant?")
 .sellable(true);
 
-const WEAPON_CRATE: ShopItem = ShopItem::new(
+pub const WEAPON_CRATE: ShopItem = ShopItem::new(
     "weaponcrate",
     "Weapon Crate",
     "📦",
