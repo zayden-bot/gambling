@@ -114,13 +114,13 @@ impl Gems for GemsRow {
 
 #[derive(FromRow)]
 pub struct EggplantsRow {
-    pub id: i64,
+    pub user_id: i64,
     pub quantity: i64,
 }
 
 #[derive(FromRow)]
 pub struct LottoTicketRow {
-    pub id: i64,
+    pub user_id: i64,
     pub quantity: i64,
 }
 
@@ -307,8 +307,8 @@ impl LeaderboardRow {
             Self::NetWorth(row) => UserId::new(row.id as u64),
             Self::Coins(row) => UserId::new(row.id as u64),
             Self::Gems(row) => UserId::new(row.id as u64),
-            Self::Eggplants(row) => UserId::new(row.id as u64),
-            Self::LottoTickets(row) => UserId::new(row.id as u64),
+            Self::Eggplants(row) => UserId::new(row.user_id as u64),
+            Self::LottoTickets(row) => UserId::new(row.user_id as u64),
         }
     }
 
