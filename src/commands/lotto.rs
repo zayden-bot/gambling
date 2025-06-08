@@ -146,7 +146,6 @@ impl Commands {
         let mut tx = pool.begin().await.unwrap();
 
         let total_tickets = Manager::total_tickets(&mut tx).await.unwrap();
-        let jackpot = total_tickets * LOTTO_TICKET.coin_cost().unwrap();
 
         let row = match Manager::row(&mut tx, interaction.user.id).await.unwrap() {
             Some(row) => row,
@@ -176,7 +175,7 @@ impl Commands {
             )
             .field(
                 "Jackpot Value",
-                format!("{} <:coin:{COIN}>", jackpot.format()),
+                format!("{} <:coin:{COIN}>", jackpot(total_tickets).format()),
                 false,
             )
             .field(
