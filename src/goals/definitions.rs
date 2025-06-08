@@ -44,7 +44,8 @@ impl GoalDefinition {
 }
 
 const LOTTO: GoalDefinition = GoalDefinition::new("lotto")
-    .set_description(|_| String::from("Buy a lottery ticket"))
+    .set_target(|_| rand::random_range(1..=3))
+    .set_description(|t| format!("Buy {t} lottery ticket"))
     .set_update_fn(|goal: &mut GamblingGoalsRow, event: &Event| {
         let Event::ShopPurchase(purchase_id) = event else {
             return false;

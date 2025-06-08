@@ -255,15 +255,20 @@ pub trait Mining {
             return 0;
         }
 
-        self.miners() * 10
+        let base_value = self.miners() as f64 * 10.0;
+        let prestige_multiplier = 1.0 + self.prestige() as f64 * 0.01;
+
+        (base_value * prestige_multiplier) as i64
     }
 }
 
 pub trait MaxBet {
+    fn prestige(&self) -> i64;
+
     fn level(&self) -> i32;
 
     fn max_bet(&self) -> i64 {
-        (self.level() as i64 * 10_000).max(10_000)
+        (self.level() as i64 * 10_000).max(10_000) * (self.prestige() + 1)
     }
 }
 

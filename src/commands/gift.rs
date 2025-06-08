@@ -40,6 +40,7 @@ pub struct SenderRow {
     pub gems: i64,
     pub gift: NaiveDate,
     pub level: Option<i32>,
+    pub prestige: i64,
 }
 
 impl SenderRow {
@@ -52,6 +53,7 @@ impl SenderRow {
             gems: 0,
             gift: NaiveDate::default(),
             level: Some(0),
+            prestige: 0,
         }
     }
 }
@@ -79,6 +81,10 @@ impl Gems for SenderRow {
 impl MaxBet for SenderRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
+    }
+
+    fn prestige(&self) -> i64 {
+        self.prestige
     }
 }
 
@@ -141,14 +147,16 @@ impl Commands {
             return Err(Error::GiftUsed(tomorrow(Some(now))));
         }
 
-        GiftHandler::add_coins(pool, recipient.id, GIFT_AMOUNT)
+        let amount = GIFT_AMOUNT * (user_row.prestige + 1);
+
+        GiftHandler::add_coins(pool, recipient.id, amount)
             .await
             .unwrap();
 
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
                 &mut user_row,
-                Event::Send(SendEvent::new(GIFT_AMOUNT, interaction.user.id)),
+                Event::Send(SendEvent::new(amount, interaction.user.id)),
             )
             .await?;
 
@@ -157,7 +165,7 @@ impl Commands {
         let embed = CreateEmbed::new()
             .description(format!(
                 "🎁 You sent a gift of {} to {}",
-                GIFT_AMOUNT.format(),
+                amount.format(),
                 recipient.mention()
             ))
             .colour(Colour::GOLD);

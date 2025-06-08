@@ -58,6 +58,7 @@ pub struct DigRow {
     pub lapis: Option<i64>,
     pub diamonds: Option<i64>,
     pub emeralds: Option<i64>,
+    pub prestige: i64,
 }
 
 impl DigRow {
@@ -78,6 +79,7 @@ impl DigRow {
             lapis: Some(0),
             diamonds: Some(0),
             emeralds: Some(0),
+            prestige: 0,
         }
     }
 
@@ -138,6 +140,10 @@ impl MaxBet for DigRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
+
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
 }
 
 impl Commands {
@@ -170,7 +176,9 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let num_attempts = (row.miners.unwrap_or_default() as u64).saturating_add(10);
+        let base_value = row.miners.unwrap_or_default() as f64 * 10.0;
+        let prestige_multiplier = 1.0 + row.prestige() as f64 * 0.01;
+        let num_attempts = (base_value * prestige_multiplier) as u64;
 
         for (resource, chance) in CHANCES.iter() {
             *resources.get_mut(resource).unwrap() += Binomial::new(num_attempts, *chance)

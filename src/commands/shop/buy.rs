@@ -180,6 +180,10 @@ impl MaxBet for BuyRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
+
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
 }
 
 pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: ShopManager<Db>>(

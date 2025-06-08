@@ -23,6 +23,7 @@ pub struct DailyRow {
     pub id: i64,
     pub coins: i64,
     pub daily: NaiveDate,
+    pub prestige: i64,
 }
 
 impl DailyRow {
@@ -33,6 +34,7 @@ impl DailyRow {
             id: id.get() as i64,
             coins: 0,
             daily: NaiveDate::default(),
+            prestige: 0,
         }
     }
 }
@@ -67,15 +69,14 @@ impl Commands {
             return Err(Error::DailyClaimed(tomorrow(Some(now))));
         }
 
-        *row.coins_mut() += START_AMOUNT;
+        let amount = START_AMOUNT * (row.prestige + 1);
+
+        *row.coins_mut() += amount;
 
         Manager::save(pool, row).await.unwrap();
 
         let embed = CreateEmbed::new()
-            .description(format!(
-                "Collected {} <:coin:{COIN}>",
-                START_AMOUNT.format()
-            ))
+            .description(format!("Collected {} <:coin:{COIN}>", amount.format()))
             .colour(Colour::GOLD);
 
         interaction

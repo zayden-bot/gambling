@@ -15,6 +15,7 @@ pub struct SendRow {
     pub coins: i64,
     pub gems: i64,
     pub level: Option<i32>,
+    pub prestige: i64,
 }
 
 impl SendRow {
@@ -26,6 +27,7 @@ impl SendRow {
             coins: 0,
             gems: 0,
             level: Some(0),
+            prestige: 0,
         }
     }
 }
@@ -51,6 +53,10 @@ impl Gems for SendRow {
 }
 
 impl MaxBet for SendRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
+
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
