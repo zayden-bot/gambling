@@ -10,7 +10,7 @@ pub trait EventRow: Coins + Gems + MaxBet + Send + Sync {}
 impl<T: Coins + Gems + MaxBet + Send + Sync> EventRow for T {}
 
 pub enum Event {
-    GameEnd(GameEndEvent),
+    Game(GameEvent),
     ShopPurchase(ShopPurchaseEvent),
     Send(SendEvent),
     Work(UserId),
@@ -19,7 +19,7 @@ pub enum Event {
 impl Event {
     pub fn user_id(&self) -> UserId {
         match self {
-            Self::GameEnd(event) => event.user_id,
+            Self::Game(event) => event.user_id,
             Self::Work(id) => *id,
             Self::Send(event) => event.sender,
             Self::ShopPurchase(event) => event.user_id,
@@ -27,18 +27,18 @@ impl Event {
     }
 }
 
-pub struct GameEndEvent {
+pub struct GameEvent {
     pub game_id: String,
     pub user_id: UserId,
-    pub bet: i64,
+    pub payout: i64,
 }
 
-impl GameEndEvent {
-    pub fn new(id: impl Into<String>, user_id: impl Into<UserId>, bet: i64) -> Self {
+impl GameEvent {
+    pub fn new(id: impl Into<String>, user_id: impl Into<UserId>, payout: i64) -> Self {
         Self {
             game_id: id.into(),
             user_id: user_id.into(),
-            bet,
+            payout,
         }
     }
 }

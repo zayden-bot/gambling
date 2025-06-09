@@ -14,7 +14,7 @@ use zayden_core::parse_options;
 use crate::{
     BLANK, COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result,
     VerifyBet,
-    events::{Dispatch, Event, GameEndEvent},
+    events::{Dispatch, Event, GameEvent},
 };
 
 use super::Commands;
@@ -138,14 +138,14 @@ impl Commands {
         dispatch
             .fire(
                 &mut p1_row,
-                Event::GameEnd(GameEndEvent::new("rps", p1, state.bet)),
+                Event::Game(GameEvent::new("rps", p1, state.bet)),
             )
             .await?;
 
         dispatch
             .fire(
                 &mut p2_row,
-                Event::GameEnd(GameEndEvent::new("rps", p2, state.bet)),
+                Event::Game(GameEvent::new("rps", p2, state.bet)),
             )
             .await?;
 

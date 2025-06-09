@@ -8,7 +8,7 @@ use serenity::all::{
 use sqlx::{Database, Pool};
 use zayden_core::{FormatNum, parse_options};
 
-use crate::events::{Dispatch, Event, GameEndEvent};
+use crate::events::{Dispatch, Event, GameEvent};
 use crate::{
     COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result, TAILS,
     VerifyBet,
@@ -58,18 +58,18 @@ impl Commands {
             payout = -payout;
         }
 
+        Dispatch::<Db, GoalsHandler>::new(pool)
+            .fire(
+                &mut row,
+                Event::Game(GameEvent::new("coinflip", interaction.user.id, payout)),
+            )
+            .await?;
+
         payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
 
         row.add_coins(payout);
 
         let coins = row.coins();
-
-        Dispatch::<Db, GoalsHandler>::new(pool)
-            .fire(
-                &mut row,
-                Event::GameEnd(GameEndEvent::new("coinflip", interaction.user.id, bet)),
-            )
-            .await?;
 
         GameHandler::save(pool, row).await.unwrap();
         GameCache::update(ctx, interaction.user.id).await;

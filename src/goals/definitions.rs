@@ -78,11 +78,11 @@ const WIN_10: GoalDefinition = GoalDefinition::new("gift")
     .set_target(|_| rand::random_range(7..=10))
     .set_description(|t| format!("Win {t} times"))
     .set_update_fn(|goal: &mut GamblingGoalsRow, event: &Event| {
-        let Event::GameEnd(event) = event else {
+        let Event::Game(event) = event else {
             return false;
         };
 
-        if event.bet <= 0 {
+        if event.payout <= 0 {
             return false;
         }
 
@@ -94,7 +94,7 @@ const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
     .set_target(|_| rand::random_range(3..=7))
     .set_description(|t| format!("Hit a streak of {t}x on Higher or Lower"))
     .set_update_fn(|goal: &mut GamblingGoalsRow, event: &Event| {
-        let Event::GameEnd(event) = event else {
+        let Event::Game(event) = event else {
             return false;
         };
 
@@ -102,7 +102,7 @@ const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
             return false;
         }
 
-        goal.progress = event.bet / 100;
+        goal.progress = event.payout / 100;
         goal.progress = goal.progress.min(goal.target);
         true
     });
@@ -111,15 +111,15 @@ const WIN_MAX_BET: GoalDefinition = GoalDefinition::new("winmaxbet")
     .set_target(|row| row.level() as i64 * 10_000)
     .set_description(|t| format!("Win {} coins", t.format()))
     .set_update_fn(|goal, event| {
-        let Event::GameEnd(event) = event else {
+        let Event::Game(event) = event else {
             return false;
         };
 
-        if event.bet <= 0 {
+        if event.payout <= 0 {
             return false;
         }
 
-        goal.update_progress(event.bet);
+        goal.update_progress(event.payout);
         true
     });
 
@@ -127,11 +127,11 @@ const WIN_3_ROW: GoalDefinition = GoalDefinition::new("win3row")
     .set_target(|_| 3)
     .set_description(|_| String::from("Win 3 times in a row"))
     .set_update_fn(|goal, event| {
-        let Event::GameEnd(event) = event else {
+        let Event::Game(event) = event else {
             return false;
         };
 
-        if event.bet <= 0 {
+        if event.payout <= 0 {
             goal.reset_progress();
             return false;
         }
@@ -144,11 +144,11 @@ const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
     .set_target(|row| row.coins().max(1000).min(row.max_bet()))
     .set_description(|t| format!("Go all in ({})", t.format()))
     .set_update_fn(|goal, event| {
-        let Event::GameEnd(event) = event else {
+        let Event::Game(event) = event else {
             return false;
         };
 
-        goal.update_progress(event.bet.abs());
+        goal.update_progress(event.payout.abs());
         goal.is_complete()
     });
 

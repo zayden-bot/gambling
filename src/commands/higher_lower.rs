@@ -13,7 +13,7 @@ use serenity::all::{
 use sqlx::{Database, Pool};
 use zayden_core::FormatNum;
 
-use crate::events::{Dispatch, Event, GameEndEvent};
+use crate::events::{Dispatch, Event, GameEvent};
 use crate::{
     CLUBS_2, CLUBS_3, CLUBS_4, CLUBS_5, CLUBS_6, CLUBS_7, CLUBS_8, CLUBS_9, CLUBS_10, CLUBS_A,
     CLUBS_J, CLUBS_K, CLUBS_Q, Coins, DIAMONDS_2, DIAMONDS_3, DIAMONDS_4, DIAMONDS_5, DIAMONDS_6,
@@ -186,7 +186,7 @@ impl Commands {
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
                 &mut row,
-                Event::GameEnd(GameEndEvent::new(
+                Event::Game(GameEvent::new(
                     "higherorlower",
                     interaction.user.id,
                     payout + BUYIN,

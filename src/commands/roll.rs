@@ -5,7 +5,7 @@ use serenity::all::{
 use sqlx::{Database, Pool};
 use zayden_core::{FormatNum, parse_options};
 
-use crate::events::{Dispatch, Event, GameEndEvent};
+use crate::events::{Dispatch, Event, GameEvent};
 use crate::{
     COIN, Coins, EffectsManager, Error, GameCache, GameManager, GameRow, GoalsManager, Result,
     VerifyBet,
@@ -67,18 +67,18 @@ impl Commands {
             ("🎲 Dice Roll 🎲 - You Lost!", "Lost:", -bet, Colour::RED)
         };
 
+        Dispatch::<Db, GoalHandler>::new(pool)
+            .fire(
+                &mut row,
+                Event::Game(GameEvent::new("roll", interaction.user.id, bet)),
+            )
+            .await?;
+
         payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
 
         row.add_coins(payout);
 
         let coins = row.coins();
-
-        Dispatch::<Db, GoalHandler>::new(pool)
-            .fire(
-                &mut row,
-                Event::GameEnd(GameEndEvent::new("roll", interaction.user.id, bet)),
-            )
-            .await?;
 
         GameHandler::save(pool, row).await.unwrap();
         GameCache::update(ctx, interaction.user.id).await;
