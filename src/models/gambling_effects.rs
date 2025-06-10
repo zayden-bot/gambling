@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Utc};
 use serenity::all::UserId;
 use sqlx::{Database, Pool, any::AnyQueryResult};
 
@@ -26,7 +26,10 @@ pub trait EffectsManager<Db: Database> {
         let effects = Self::get_effects(&mut *tx, user_id).await.unwrap();
 
         for effect in effects {
-            if effect.expiry.is_none() {
+            if effect
+                .expiry
+                .is_none_or(|expiry| expiry < Utc::now().naive_utc())
+            {
                 Self::remove_effect(&mut *tx, effect.id).await.unwrap();
             }
 

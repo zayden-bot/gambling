@@ -9,7 +9,7 @@ use sqlx::types::Json;
 use sqlx::{Database, Pool, prelude::FromRow};
 use zayden_core::parse_options;
 
-use crate::shop::{LUCKY_CHIP, SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
+use crate::shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
 use crate::{
     COIN, Coins, EffectsManager, Error, GEM, GamblingItem, Gems, ItemInventory, Mining, Result,
 };
@@ -50,7 +50,7 @@ pub trait InventoryManager<Db: Database> {
     ) -> sqlx::Result<Option<InventoryRow>>;
 
     async fn edit_item_quantity(
-        pool: &Pool<Db>,
+        conn: &mut Db::Connection,
         id: impl Into<UserId> + Send,
         item_id: &str,
         amount: i64,
@@ -219,17 +219,16 @@ impl Commands {
     }
 
     pub fn register_inventory() -> CreateCommand {
-        let item_opt = CreateCommandOption::new(
+        let mut item_opt = CreateCommandOption::new(
             CommandOptionType::String,
             "item",
             "Select the item you want to activate",
         )
-        .required(true)
-        .add_string_choice(LUCKY_CHIP.name, LUCKY_CHIP.id);
+        .required(true);
 
-        // for item in SHOP_ITEMS.iter().filter(|item| item.useable) {
-        //     item_opt = item_opt.add_string_choice(item.name, item.id)
-        // }
+        for item in SHOP_ITEMS.iter().filter(|item| item.useable) {
+            item_opt = item_opt.add_string_choice(item.name, item.id)
+        }
 
         let use_item = CreateCommandOption::new(
             CommandOptionType::SubCommand,
@@ -368,20 +367,16 @@ async fn use_item<
         return Err(Error::ZeroAmount);
     }
 
-    let quantity = match InventoryHandler::edit_item_quantity(
-        pool,
-        interaction.user.id,
-        item_id,
-        amount,
-    )
-    .await
-    {
-        Ok(q) => q,
-        Err(sqlx::Error::RowNotFound) => return Err(Error::InvalidAmount),
-        r => r?,
-    };
-
     let mut tx = pool.begin().await.unwrap();
+
+    let quantity =
+        match InventoryHandler::edit_item_quantity(&mut *tx, interaction.user.id, item_id, amount)
+            .await
+        {
+            Ok(q) => q,
+            Err(sqlx::Error::RowNotFound) => return Err(Error::InvalidAmount),
+            r => r?,
+        };
 
     for _ in 0..amount {
         EffectsHandler::add_effect(&mut *tx, interaction.user.id, item)
