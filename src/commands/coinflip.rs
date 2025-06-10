@@ -51,8 +51,9 @@ impl Commands {
         let heads = rand::random_bool(0.5);
         let mut payout = bet;
         let winner = matches!(prediction, CoinSide::Heads) && heads;
+        let edge = rand::random_bool(1.0 / 6000.0);
 
-        if rand::random_bool(1.0 / 6000.0) {
+        if winner && edge {
             payout *= 1000;
         } else if !winner {
             payout = -payout;
@@ -74,7 +75,7 @@ impl Commands {
         GameHandler::save(pool, row).await.unwrap();
         GameCache::update(ctx, interaction.user.id).await;
 
-        let (coin, title) = if payout == bet * 1000 {
+        let (coin, title) = if edge {
             (prediction, "Coin Flip - EDGE ROLL!")
         } else if winner {
             (prediction, "Coin Flip - You Won!")
