@@ -326,7 +326,7 @@ const PROFIT_X2: ShopItem = ShopItem::new(
 .description("Double profit from winning | Duration: `+30 minute`")
 .useable(true)
 .effect_fn(|payout| {
-    if payout > 0 {
+    if payout < 0 {
         return payout;
     }
 
@@ -345,7 +345,7 @@ const PROFIT_X5: ShopItem = ShopItem::new(
 .description("Five times profit from winning | Duration: `+20 minute`")
 .useable(true)
 .effect_fn(|payout| {
-    if payout > 0 {
+    if payout < 0 {
         return payout;
     }
 
@@ -364,7 +364,7 @@ const PROFIT_X10: ShopItem = ShopItem::new(
 .description("Ten times profit from winning | Duration: `+10 minute`")
 .useable(true)
 .effect_fn(|payout| {
-    if payout > 0 {
+    if payout < 0 {
         return payout;
     }
 
@@ -383,7 +383,7 @@ const PROFIT_X50: ShopItem = ShopItem::new(
 .description("Fifty times profit from winning | Duration: `+2 minute`")
 .useable(true)
 .effect_fn(|payout| {
-    if payout > 0 {
+    if payout < 0 {
         return payout;
     }
 
@@ -402,7 +402,7 @@ const PROFIT_X100: ShopItem = ShopItem::new(
 .description("One hundered times profit from winning | Duration: `+1 minute`")
 .useable(true)
 .effect_fn(|payout| {
-    if payout > 0 {
+    if payout < 0 {
         return payout;
     }
 
