@@ -94,6 +94,7 @@ impl From<ProfileRow> for CreateEmbed {
         } else {
             inventory
                 .iter()
+                .filter(|item| item.quantity > 0)
                 .map(|inv| (inv, ShopItem::from(inv)))
                 .map(|(inv, item)| format!("{} {} {}s", item.emoji(), inv.quantity, item.name))
                 .collect::<Vec<_>>()
