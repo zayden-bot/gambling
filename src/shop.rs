@@ -522,7 +522,7 @@ const UNIVERSE: ShopItem = ShopItem::new(
 .add_cost(1000000, ShopCurrency::Production);
 //endregion
 
-pub struct ShopItems<'a>([ShopItem<'a>; 19]);
+pub struct ShopItems<'a>([ShopItem<'a>; 17]);
 
 impl ShopItems<'_> {
     pub fn get(&self, id: &str) -> Option<&ShopItem> {
@@ -541,9 +541,9 @@ impl<'a> Deref for ShopItems<'a> {
 pub const SHOP_ITEMS: ShopItems = ShopItems([
     LOTTO_TICKET,
     EGGPLANT,
-    WEAPON_CRATE,
+    // WEAPON_CRATE,
     LUCKY_CHIP,
-    RIGGED_LUCK,
+    // RIGGED_LUCK,
     PROFIT_X2,
     PROFIT_X5,
     PROFIT_X10,
