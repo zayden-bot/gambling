@@ -323,7 +323,7 @@ const PROFIT_X2: ShopItem = ShopItem::new(
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Double profit from winning | Duration: `+30 minute`")
+.description("Double profit from winning | Duration: `+20 minute`")
 .useable(true)
 .effect_fn(|payout| {
     if payout < 0 {
@@ -332,7 +332,7 @@ const PROFIT_X2: ShopItem = ShopItem::new(
 
     payout * 2
 })
-.duration(Duration::from_secs(30 * 60));
+.duration(Duration::from_secs(20 * 60));
 
 const PROFIT_X5: ShopItem = ShopItem::new(
     "profit5x",
@@ -342,7 +342,7 @@ const PROFIT_X5: ShopItem = ShopItem::new(
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Five times profit from winning | Duration: `+20 minute`")
+.description("Five times profit from winning | Duration: `+15 minute`")
 .useable(true)
 .effect_fn(|payout| {
     if payout < 0 {
@@ -351,7 +351,7 @@ const PROFIT_X5: ShopItem = ShopItem::new(
 
     payout * 5
 })
-.duration(Duration::from_secs(20 * 60));
+.duration(Duration::from_secs(15 * 60));
 
 const PROFIT_X10: ShopItem = ShopItem::new(
     "profit10x",
