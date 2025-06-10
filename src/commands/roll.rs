@@ -60,7 +60,7 @@ impl Commands {
             (
                 "🎲 Dice Roll 🎲 - You Won!",
                 "Profit:",
-                bet * (n_sides - 1),
+                bet * n_sides,
                 Colour::DARK_GREEN,
             )
         } else {
@@ -75,6 +75,7 @@ impl Commands {
             .await?;
 
         payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
+        payout -= bet;
 
         row.add_coins(payout);
 
