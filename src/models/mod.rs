@@ -251,13 +251,16 @@ pub trait Mining {
     }
 
     fn hourly(&self) -> i64 {
-        if self.miners() <= 0 {
+        let miners = self.miners();
+
+        if miners <= 0 {
             return 0;
         }
 
-        const SCALING_CONST: f64 = 31.6;
+        const BASE_EXPONENT: f64 = 0.75;
+        const SCALING_CONST: f64 = 10.0;
 
-        let base_value = (self.miners() as f64).sqrt();
+        let base_value = (miners as f64).powf(BASE_EXPONENT);
         let prestige_multiplier = 1.0 + self.prestige() as f64 * 0.01;
 
         (base_value * SCALING_CONST * prestige_multiplier) as i64
