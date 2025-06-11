@@ -26,39 +26,43 @@ pub trait EffectsManager<Db: Database> {
         user_id: impl Into<UserId> + Send,
         mut base_payout: i64,
     ) -> i64 {
-        let mut tx = pool.begin().await.unwrap();
+        let user_id = user_id.into();
 
+        let mut tx = pool.begin().await.unwrap();
         let effects = Self::get_effects(&mut *tx, user_id).await.unwrap();
 
-        let mut final_payout = 0;
+        let mut accumulated_effect_results = 0;
+
+        let now_naive_utc = Utc::now().naive_utc();
 
         for effect in effects {
-            if effect
-                .expiry
-                .is_none_or(|expiry| expiry < Utc::now().naive_utc())
-            {
-                Self::remove_effect(&mut *tx, effect.id).await.unwrap();
-
-                if effect.expiry.is_some() {
-                    continue;
+            match effect.expiry {
+                None => {
+                    Self::remove_effect(&mut *tx, effect.id).await.unwrap();
+                }
+                Some(expiry_time) => {
+                    if expiry_time < now_naive_utc {
+                        Self::remove_effect(&mut *tx, effect.id).await.unwrap();
+                        continue;
+                    }
                 }
             }
 
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
             if matches!(item.category, ShopPage::Boost1) {
-                base_payout = (item.effect_fn)(base_payout)
+                base_payout = (item.effect_fn)(base_payout);
             }
 
-            final_payout += (item.effect_fn)(base_payout)
+            accumulated_effect_results += (item.effect_fn)(base_payout);
         }
 
         tx.commit().await.unwrap();
 
-        if final_payout == 0 {
+        if accumulated_effect_results == 0 {
             base_payout
         } else {
-            final_payout
+            accumulated_effect_results
         }
     }
 }
