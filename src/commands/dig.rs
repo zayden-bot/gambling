@@ -58,7 +58,7 @@ pub struct DigRow {
     pub lapis: Option<i64>,
     pub diamonds: Option<i64>,
     pub emeralds: Option<i64>,
-    pub prestige: i64,
+    pub prestige: Option<i64>,
 }
 
 impl DigRow {
@@ -79,7 +79,7 @@ impl DigRow {
             lapis: Some(0),
             diamonds: Some(0),
             emeralds: Some(0),
-            prestige: 0,
+            prestige: Some(0),
         }
     }
 
@@ -142,7 +142,7 @@ impl MaxBet for DigRow {
     }
 
     fn prestige(&self) -> i64 {
-        self.prestige
+        self.prestige.unwrap_or_default()
     }
 }
 

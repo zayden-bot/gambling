@@ -23,7 +23,7 @@ pub struct DailyRow {
     pub id: i64,
     pub coins: i64,
     pub daily: NaiveDate,
-    pub prestige: i64,
+    pub prestige: Option<i64>,
 }
 
 impl DailyRow {
@@ -34,7 +34,7 @@ impl DailyRow {
             id: id.get() as i64,
             coins: 0,
             daily: NaiveDate::default(),
-            prestige: 0,
+            prestige: Some(0),
         }
     }
 }
@@ -69,7 +69,7 @@ impl Commands {
             return Err(Error::DailyClaimed(tomorrow(Some(now))));
         }
 
-        let amount = START_AMOUNT * (row.prestige + 1);
+        let amount = START_AMOUNT * (row.prestige.unwrap_or_default() + 1);
 
         *row.coins_mut() += amount;
 
