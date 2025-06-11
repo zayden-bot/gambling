@@ -55,7 +55,11 @@ pub trait EffectsManager<Db: Database> {
 
         tx.commit().await.unwrap();
 
-        final_payout.max(base_payout)
+        if final_payout == 0 {
+            base_payout
+        } else {
+            final_payout
+        }
     }
 }
 
