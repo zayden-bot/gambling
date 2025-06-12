@@ -85,7 +85,7 @@ impl Commands {
         let result = if payout == 0 {
             "No change".to_string()
         } else if winner == Some(true) {
-            format!("Profit: {bet}")
+            format!("Payout: {bet}")
         } else {
             format!("Lost: {bet}")
         };

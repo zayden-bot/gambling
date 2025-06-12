@@ -198,7 +198,7 @@ impl Commands {
         GameCache::update(ctx, interaction.user.id).await;
 
         let result = if payout > 0 {
-            format!("Profit: {}", payout.format())
+            format!("Payout: {}", payout.format())
         } else {
             format!("Lost: {}", payout.format())
         };

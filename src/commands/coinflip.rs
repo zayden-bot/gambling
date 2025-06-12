@@ -84,7 +84,7 @@ impl Commands {
         };
 
         let (result, colour) = if winner {
-            (format!("Profit: {}", payout.format()), Colour::DARK_GREEN)
+            (format!("Payout: {}", payout.format()), Colour::DARK_GREEN)
         } else {
             (format!("Lost: {}", payout.format()), Colour::RED)
         };

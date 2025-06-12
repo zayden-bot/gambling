@@ -59,8 +59,8 @@ impl Commands {
         let (title, result, mut payout, colour) = if roll == prediction {
             (
                 "🎲 Dice Roll 🎲 - You Won!",
-                "Profit:",
-                bet * n_sides,
+                "Payout:",
+                bet * (n_sides - 1),
                 Colour::DARK_GREEN,
             )
         } else {
@@ -75,9 +75,6 @@ impl Commands {
             .await?;
 
         payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
-        if payout > 0 {
-            payout -= bet;
-        }
 
         row.add_coins(payout);
 
