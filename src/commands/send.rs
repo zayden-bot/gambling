@@ -8,12 +8,16 @@ use sqlx::{Database, Pool};
 use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, SendEvent};
-use crate::{COIN, Coins, Commands, Error, Gems, GoalsManager, MaxBet, Result, ShopCurrency};
+use crate::{
+    COIN, Coins, Commands, Error, Gems, GoalsManager, MaxBet, Result, ShopCurrency, Stamina,
+    StaminaManager,
+};
 
 pub struct SendRow {
     pub id: i64,
     pub coins: i64,
     pub gems: i64,
+    pub stamina: i32,
     pub level: Option<i32>,
     pub prestige: i64,
 }
@@ -26,6 +30,7 @@ impl SendRow {
             id: id.get() as i64,
             coins: 0,
             gems: 0,
+            stamina: 0,
             level: Some(0),
             prestige: 0,
         }
@@ -62,6 +67,16 @@ impl MaxBet for SendRow {
     }
 }
 
+impl Stamina for SendRow {
+    fn stamina(&self) -> i32 {
+        self.stamina
+    }
+
+    fn stamina_mut(&mut self) -> &mut i32 {
+        &mut self.stamina
+    }
+}
+
 #[async_trait]
 pub trait SendManager<Db: Database> {
     async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<SendRow>>;
@@ -76,7 +91,12 @@ pub trait SendManager<Db: Database> {
 }
 
 impl Commands {
-    pub async fn send<Db: Database, GoalHandler: GoalsManager<Db>, SendHandler: SendManager<Db>>(
+    pub async fn send<
+        Db: Database,
+        StaminaHandler: StaminaManager<Db>,
+        GoalHandler: GoalsManager<Db>,
+        SendHandler: SendManager<Db>,
+    >(
         ctx: &Context,
         interaction: &CommandInteraction,
         options: Vec<ResolvedOption<'_>>,
@@ -107,6 +127,8 @@ impl Commands {
             None => SendRow::new(interaction.user.id),
         };
 
+        row.verify_work::<Db, StaminaHandler>()?;
+
         if row.coins() < amount {
             return Err(Error::InsufficientFunds {
                 required: amount - row.coins(),
@@ -122,6 +144,8 @@ impl Commands {
         *row.coins_mut() -= amount;
 
         SendHandler::add_coins(pool, recipient.id, amount).await?;
+
+        row.done_work();
 
         Dispatch::<Db, GoalHandler>::new(pool)
             .fire(
