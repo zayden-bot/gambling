@@ -257,8 +257,8 @@ pub trait Mining {
             return 0;
         }
 
-        const BASE_EXPONENT: f64 = 0.99;
-        const SCALING_CONST: f64 = 10.0;
+        const BASE_EXPONENT: f64 = 0.9;
+        const SCALING_CONST: f64 = 25.0;
 
         let base_value = (miners as f64).powf(BASE_EXPONENT);
         let prestige_multiplier = 1.0 + self.prestige() as f64 * 0.01;
