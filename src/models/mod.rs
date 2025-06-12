@@ -185,15 +185,15 @@ pub trait Mining {
     fn units(&self) -> String {
         let max_values = self.max_values();
 
-        let max_miners = max_values.get("miner").unwrap();
-        let max_mines = max_values.get("mine").unwrap();
-        let max_land = max_values.get("land").unwrap();
-        let max_countries = max_values.get("country").unwrap();
-        let max_continents = max_values.get("continent").unwrap();
-        let max_planets = max_values.get("planet").unwrap();
-        let max_solar_systems = max_values.get("solar_system").unwrap();
-        let max_galaxies = max_values.get("galaxy").unwrap();
-        let max_universes = max_values.get("universe").unwrap();
+        let max_miners = max_values.get("miner").unwrap().format();
+        let max_mines = max_values.get("mine").unwrap().format();
+        let max_land = max_values.get("land").unwrap().format();
+        let max_countries = max_values.get("country").unwrap().format();
+        let max_continents = max_values.get("continent").unwrap().format();
+        let max_planets = max_values.get("planet").unwrap().format();
+        let max_solar_systems = max_values.get("solar_system").unwrap().format();
+        let max_galaxies = max_values.get("galaxy").unwrap().format();
+        let max_universes = max_values.get("universe").unwrap().format();
 
         format!(
             "`{}/{max_miners}` miners
@@ -205,15 +205,15 @@ pub trait Mining {
         `{}/{max_solar_systems}` solar systems
         `{}/{max_galaxies}` galaxies
         `{}/{max_universes}` universes",
-            self.miners(),
-            self.mines(),
-            self.land(),
-            self.countries(),
-            self.continents(),
-            self.planets(),
-            self.solar_systems(),
-            self.galaxies(),
-            self.universes(),
+            self.miners().format(),
+            self.mines().format(),
+            self.land().format(),
+            self.countries().format(),
+            self.continents().format(),
+            self.planets().format(),
+            self.solar_systems().format(),
+            self.galaxies().format(),
+            self.universes().format(),
         )
     }
 

@@ -2,6 +2,7 @@ use serenity::all::{
     CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
 };
 use sqlx::{Database, Pool};
+use zayden_core::FormatNum;
 
 use crate::{COIN, MineManager, Mining, Result};
 
@@ -23,7 +24,7 @@ impl Commands {
         let embed = CreateEmbed::new()
             .field(
                 "Mine Income",
-                format!("{} <:coin:{COIN}> / hour", row.hourly()),
+                format!("{} <:coin:{COIN}> / hour", row.hourly().format()),
                 false,
             )
             .field("Units", row.units(), false);
