@@ -70,7 +70,7 @@ pub trait Stamina {
                 .unwrap_or_default()
                 .timestamp();
 
-            return Err(Error::WorkClaimed(next_timestamp));
+            return Err(Error::OutOfStamina(next_timestamp));
         }
 
         Ok(())

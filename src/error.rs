@@ -15,7 +15,7 @@ pub enum Error {
     MaximumBetAmount(i64),
     MaximumSendAmount(i64),
     DailyClaimed(i64),
-    WorkClaimed(i64),
+    OutOfStamina(i64),
     GiftUsed(i64),
     SelfGift,
     SelfSend,
@@ -52,8 +52,8 @@ impl std::fmt::Display for Error {
             Error::DailyClaimed(timestamp) => {
                 write!(f, "You collected today, try again <t:{timestamp}:R>",)
             }
-            Error::WorkClaimed(timestamp) => {
-                write!(f, "You're on a break! Try again <t:{timestamp}:R>")
+            Error::OutOfStamina(timestamp) => {
+                write!(f, "You're out of stamina! Try again <t:{timestamp}:R>")
             }
             Error::GiftUsed(timestamp) => write!(
                 f,
