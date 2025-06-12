@@ -153,7 +153,7 @@ pub struct ShopItem<'a> {
     pub category: ShopPage,
     pub sellable: bool,
     pub useable: bool,
-    pub effect_fn: fn(i64) -> i64,
+    pub effect_fn: fn(i64, i64) -> i64,
     pub effect_duration: Option<Duration>,
 }
 
@@ -175,7 +175,7 @@ impl<'a> ShopItem<'a> {
             category,
             sellable: false,
             useable: false,
-            effect_fn: |payout| payout,
+            effect_fn: |_, payout| payout,
             effect_duration: None,
         }
     }
@@ -209,7 +209,7 @@ impl<'a> ShopItem<'a> {
         self
     }
 
-    const fn effect_fn(mut self, f: fn(i64) -> i64) -> Self {
+    const fn effect_fn(mut self, f: fn(i64, i64) -> i64) -> Self {
         self.effect_fn = f;
         self
     }
@@ -303,7 +303,7 @@ pub const LUCKY_CHIP: ShopItem = ShopItem::new(
 )
 .description("Save your coins against a loss")
 .useable(true)
-.effect_fn(|payout| payout.max(0));
+.effect_fn(|bet, _| bet);
 
 const RIGGED_LUCK: ShopItem = ShopItem::new(
     "riggedluck",
@@ -325,7 +325,7 @@ const PROFIT_X2: ShopItem = ShopItem::new(
 )
 .description("Double profit from winning | Duration: `+15 minute`")
 .useable(true)
-.effect_fn(|payout| {
+.effect_fn(|_, payout| {
     if payout < 0 {
         return payout;
     }
@@ -344,7 +344,7 @@ const PROFIT_X5: ShopItem = ShopItem::new(
 )
 .description("Five times profit from winning | Duration: `+10 minute`")
 .useable(true)
-.effect_fn(|payout| {
+.effect_fn(|_, payout| {
     if payout < 0 {
         return payout;
     }
@@ -363,7 +363,7 @@ const PROFIT_X10: ShopItem = ShopItem::new(
 )
 .description("Ten times profit from winning | Duration: `+5 minute`")
 .useable(true)
-.effect_fn(|payout| {
+.effect_fn(|_, payout| {
     if payout < 0 {
         return payout;
     }
@@ -382,7 +382,7 @@ const PROFIT_X50: ShopItem = ShopItem::new(
 )
 .description("Fifty times profit from winning | Duration: `+2 minute`")
 .useable(true)
-.effect_fn(|payout| {
+.effect_fn(|_, payout| {
     if payout < 0 {
         return payout;
     }
@@ -401,7 +401,7 @@ const PROFIT_X100: ShopItem = ShopItem::new(
 )
 .description("One hundered times profit from winning | Duration: `+1 minute`")
 .useable(true)
-.effect_fn(|payout| {
+.effect_fn(|_, payout| {
     if payout < 0 {
         return payout;
     }

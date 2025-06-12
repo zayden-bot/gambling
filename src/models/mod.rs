@@ -26,6 +26,10 @@ pub trait Coins {
     fn add_coins(&mut self, payout: i64) {
         *self.coins_mut() += payout;
     }
+
+    fn bet(&mut self, bet: i64) {
+        *self.coins_mut() -= bet;
+    }
 }
 
 pub trait Gems {

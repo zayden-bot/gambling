@@ -24,7 +24,8 @@ pub trait EffectsManager<Db: Database> {
     async fn payout(
         pool: &Pool<Db>,
         user_id: impl Into<UserId> + Send,
-        mut base_payout: i64,
+        bet: i64,
+        mut payout: i64,
     ) -> i64 {
         let user_id = user_id.into();
 
@@ -51,16 +52,16 @@ pub trait EffectsManager<Db: Database> {
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
             if matches!(item.category, ShopPage::Boost1) {
-                base_payout = (item.effect_fn)(base_payout);
+                payout = (item.effect_fn)(bet, payout);
             }
 
-            accumulated_effect_results += (item.effect_fn)(base_payout);
+            accumulated_effect_results += (item.effect_fn)(bet, payout);
         }
 
         tx.commit().await.unwrap();
 
         if accumulated_effect_results == 0 {
-            base_payout
+            payout
         } else {
             accumulated_effect_results
         }

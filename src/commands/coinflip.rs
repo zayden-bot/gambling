@@ -47,17 +47,17 @@ impl Commands {
 
         GameCache::can_play(ctx, interaction.user.id).await?;
         row.verify_bet(bet)?;
+        row.bet(bet);
 
         let heads = rand::random_bool(0.5);
-        let mut payout = bet;
         let winner = matches!(prediction, CoinSide::Heads) && heads;
         let edge = rand::random_bool(1.0 / 6000.0);
 
-        if winner && edge {
-            payout *= 1000;
-        } else if !winner {
-            payout = -payout;
-        }
+        let mut payout = match (winner, edge) {
+            (true, true) => bet * 1000,
+            (true, false) => bet * 2,
+            _ => 0,
+        };
 
         Dispatch::<Db, GoalsHandler>::new(pool)
             .fire(
@@ -66,7 +66,7 @@ impl Commands {
             )
             .await?;
 
-        payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
+        payout = EffectsHandler::payout(pool, interaction.user.id, bet, payout).await;
 
         row.add_coins(payout);
 

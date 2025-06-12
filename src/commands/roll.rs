@@ -53,6 +53,7 @@ impl Commands {
         };
 
         row.verify_bet(bet)?;
+        row.bet(bet);
 
         let roll = rand::random_range(1..=n_sides);
 
@@ -60,7 +61,7 @@ impl Commands {
             (
                 "🎲 Dice Roll 🎲 - You Won!",
                 "Payout:",
-                bet * (n_sides - 1),
+                bet * n_sides,
                 Colour::DARK_GREEN,
             )
         } else {
@@ -74,7 +75,7 @@ impl Commands {
             )
             .await?;
 
-        payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
+        payout = EffectsHandler::payout(pool, interaction.user.id, bet, payout).await;
 
         row.add_coins(payout);
 

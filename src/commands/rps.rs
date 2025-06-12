@@ -46,14 +46,15 @@ impl Commands {
 
         GameCache::can_play(ctx, interaction.user.id).await?;
         row.verify_bet(bet)?;
+        row.bet(bet);
 
         let computer_choice = *CHOICES.choose(&mut rand::rng()).unwrap();
         let winner = user_choice.winner(&computer_choice);
 
         let mut payout = if winner == Some(true) {
+            bet * 2
+        } else if winner.is_none() {
             bet
-        } else if winner == Some(false) {
-            -bet
         } else {
             0
         };
@@ -65,7 +66,7 @@ impl Commands {
             )
             .await?;
 
-        payout = EffectsHandler::payout(pool, interaction.user.id, payout).await;
+        payout = EffectsHandler::payout(pool, interaction.user.id, bet, payout).await;
 
         row.add_coins(payout);
 
