@@ -134,8 +134,7 @@ impl Commands {
 
         interaction
             .edit_response(ctx, EditInteractionResponse::new().embed(embed))
-            .await
-            .unwrap();
+            .await?;
 
         Ok(())
     }
