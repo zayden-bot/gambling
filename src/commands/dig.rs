@@ -209,7 +209,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "You dug around in the mines and found:\n{}\nStamina: {}",
+                "You dug around in the mines and found:\n{}\nStamina: {stamina}",
                 {
                     let found = resources
                         .drain()
@@ -233,7 +233,6 @@ impl Commands {
                         found.join("\n")
                     }
                 },
-                stamina
             ))
             .color(Colour::GOLD);
 

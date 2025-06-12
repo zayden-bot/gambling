@@ -147,6 +147,8 @@ impl Commands {
 
         row.done_work();
 
+        let stamina = row.stamina_str();
+
         Dispatch::<Db, GoalHandler>::new(pool)
             .fire(
                 &mut row,
@@ -158,7 +160,7 @@ impl Commands {
         SendHandler::save(pool, row).await?;
 
         let embed = CreateEmbed::new().description(format!(
-            "You sent {} <:coin:{COIN}> to {}",
+            "You sent {} <:coin:{COIN}> to {}\nStamina: {stamina}",
             amount.format(),
             recipient.mention()
         ));
