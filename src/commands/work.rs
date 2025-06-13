@@ -138,6 +138,7 @@ impl Commands {
             .await?;
 
         row.done_work();
+        row.mine_activity = Some(Utc::now().naive_utc());
 
         let stamina = row.stamina_str();
 
