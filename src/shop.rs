@@ -411,7 +411,7 @@ const PROFIT_X100: ShopItem = ShopItem::new(
 .duration(Duration::from_secs(60));
 
 //region: Mine
-const MINER_COST: i64 = 1_000;
+const MINER_COST: i64 = 100;
 const MINE_COST: i64 = MINER_COST * 5;
 const LAND_COST: i64 = MINE_COST * 20;
 const COUNTRY_COST: i64 = LAND_COST * 10;
