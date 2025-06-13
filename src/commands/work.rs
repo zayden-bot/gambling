@@ -7,6 +7,7 @@ use serenity::all::{
 use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
+use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event};
 use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
@@ -146,7 +147,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "Collected {total_amount} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}\nStamina: {stamina}"
+                "Collected {} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}\nStamina: {stamina}", total_amount.format()
             ))
             .colour(Colour::GOLD);
 
