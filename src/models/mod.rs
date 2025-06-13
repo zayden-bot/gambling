@@ -253,6 +253,12 @@ pub trait Mining {
             self.production().format()
         )
     }
+}
+
+pub trait MineHourly {
+    fn miners(&self) -> i64;
+
+    fn prestige(&self) -> i64;
 
     fn hourly(&self) -> i64 {
         let miners = self.miners();

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use chrono::{NaiveDateTime, Timelike, Utc};
 use serenity::all::{
     Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
     UserId,
@@ -8,7 +9,7 @@ use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
 
 use crate::events::{Dispatch, Event};
-use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, Result, Stamina, StaminaManager};
+use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
 
 use super::Commands;
 
@@ -19,7 +20,9 @@ pub struct WorkRow {
     pub gems: i64,
     pub stamina: i32,
     pub level: Option<i32>,
-    pub prestige: i64,
+    pub miners: Option<i64>,
+    pub prestige: Option<i64>,
+    pub mine_activity: Option<NaiveDateTime>,
 }
 
 impl WorkRow {
@@ -32,7 +35,9 @@ impl WorkRow {
             gems: 0,
             stamina: 0,
             level: Some(0),
-            prestige: 0,
+            miners: Some(0),
+            prestige: Some(0),
+            mine_activity: Some(Utc::now().naive_utc()),
         }
     }
 }
@@ -69,7 +74,7 @@ impl Stamina for WorkRow {
 
 impl MaxBet for WorkRow {
     fn prestige(&self) -> i64 {
-        self.prestige
+        self.prestige.unwrap_or_default()
     }
 
     fn level(&self) -> i32 {
@@ -77,6 +82,15 @@ impl MaxBet for WorkRow {
     }
 }
 
+impl MineHourly for WorkRow {
+    fn miners(&self) -> i64 {
+        self.miners.unwrap_or_default()
+    }
+
+    fn prestige(&self) -> i64 {
+        self.prestige.unwrap_or_default()
+    }
+}
 #[async_trait]
 pub trait WorkManager<Db: Database> {
     async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<WorkRow>>;
@@ -104,8 +118,11 @@ impl Commands {
 
         row.verify_work::<Db, StaminaHandler>()?;
 
-        let amount = rand::random_range(100..=500);
-        *row.coins_mut() += amount;
+        let base_amount = rand::random_range(100..=500);
+        let mine_amount = mine_amount(&row);
+        let total_amount = base_amount + mine_amount;
+
+        *row.coins_mut() += total_amount;
 
         let gem_desc = if rand::random_bool(1.0 / 200.0) {
             row.add_gems(1);
@@ -128,7 +145,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "Collected {amount} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}\nStamina: {stamina}"
+                "Collected {total_amount} <:coin:{COIN}> for working{gem_desc}\nYour coins: {coins}\nStamina: {stamina}"
             ))
             .colour(Colour::GOLD);
 
@@ -142,4 +159,23 @@ impl Commands {
     pub fn register_work() -> CreateCommand {
         CreateCommand::new("work").description("Do some work and get some quick coins")
     }
+}
+
+fn mine_amount(row: &WorkRow) -> i64 {
+    let mine_activity = match row.mine_activity {
+        Some(dt) => dt,
+        None => {
+            return 0;
+        }
+    };
+
+    let mine_hour = mine_activity
+        .date()
+        .and_hms_opt(mine_activity.hour(), 0, 0)
+        .unwrap()
+        .and_utc();
+
+    let duration = Utc::now() - mine_hour;
+
+    duration.num_hours() * row.hourly()
 }
