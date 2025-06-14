@@ -10,6 +10,7 @@ pub mod error;
 pub mod events;
 pub mod game_cache;
 pub mod goals;
+pub mod lotto;
 pub mod models;
 pub mod shop;
 pub mod stamina;
@@ -20,7 +21,11 @@ pub use error::Error;
 use error::Result;
 pub use game_cache::GameCache;
 pub use goals::GoalHandler;
-pub use models::*;
+pub use lotto::{Lotto, LottoManager, LottoRow, jackpot};
+pub use models::{
+    Coins, EffectsManager, GamblingGoalsRow, GamblingItem, GameManager, GameRow, Gems,
+    ItemInventory, MaxBet, MineHourly, Mining, Stamina, VerifyBet,
+};
 pub use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
 pub use stamina::{StaminaCron, StaminaManager};
 

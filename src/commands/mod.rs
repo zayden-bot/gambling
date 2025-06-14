@@ -18,7 +18,6 @@ pub mod tictactoe;
 pub mod work;
 
 pub struct Commands;
-pub use lotto::Lotto;
 
 impl Commands {
     pub fn run() {}
