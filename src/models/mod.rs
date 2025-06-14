@@ -55,7 +55,7 @@ pub trait Stamina {
         format!(
             "{}{}",
             "🟩 ".repeat(self.stamina() as usize),
-            "⬛ ".repeat((Self::MAX_STAMINA - self.stamina()) as usize)
+            "⬛ ".repeat((Self::MAX_STAMINA - self.stamina()).max(0) as usize)
         )
     }
 
