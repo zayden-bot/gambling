@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use chrono::NaiveDateTime;
 use levels::{LevelsRow, level_up_xp};
 use serenity::all::{
     Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
@@ -7,7 +8,7 @@ use serenity::all::{
 use sqlx::{Database, Pool, types::Json};
 use zayden_core::FormatNum;
 
-use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, Result, ShopItem};
+use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, MaxBet, Result, ShopItem};
 
 use super::Commands;
 
@@ -24,6 +25,7 @@ pub struct ProfileRow {
     pub inventory: Option<Json<Vec<GamblingItem>>>,
     pub xp: Option<i32>,
     pub level: Option<i32>,
+    pub prestige: Option<i64>,
 }
 
 impl Coins for ProfileRow {
@@ -80,8 +82,18 @@ impl LevelsRow for ProfileRow {
         unimplemented!()
     }
 
-    fn last_xp(&self) -> chrono::NaiveDateTime {
+    fn last_xp(&self) -> NaiveDateTime {
         unimplemented!()
+    }
+}
+
+impl MaxBet for ProfileRow {
+    fn prestige(&self) -> i64 {
+        self.prestige.unwrap_or_default()
+    }
+
+    fn level(&self) -> i32 {
+        self.level.unwrap_or_default()
     }
 }
 
@@ -105,14 +117,15 @@ impl From<ProfileRow> for CreateEmbed {
             .field(format!("Cash <:coin:{COIN}>"), value.coins_str(), false)
             .field("Gems 💎", value.gems_str(), false)
             .field(
-                format!("Level {}", value.level().format()),
+                format!("Level {}", LevelsRow::level(&value).format()),
                 format!(
                     "{} / {} xp",
                     value.xp().format(),
-                    level_up_xp(value.level()).format()
+                    level_up_xp(LevelsRow::level(&value)).format()
                 ),
                 false,
             )
+            .field("Betting Maximum", value.max_bet_str(), false)
             .field("Loot", loot_str, false)
             .colour(Colour::TEAL)
     }

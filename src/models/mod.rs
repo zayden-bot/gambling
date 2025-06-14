@@ -288,6 +288,10 @@ pub trait MaxBet {
 
         (base_amount as f64 * prestige_multiplier) as i64
     }
+
+    fn max_bet_str(&self) -> String {
+        self.max_bet().format()
+    }
 }
 
 pub trait VerifyBet: Coins + MaxBet {
