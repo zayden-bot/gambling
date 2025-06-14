@@ -23,7 +23,7 @@ pub use game_cache::GameCache;
 pub use goals::GoalHandler;
 pub use lotto::{Lotto, LottoManager, LottoRow, jackpot};
 pub use models::{
-    Coins, EffectsManager, GamblingGoalsRow, GamblingItem, GameManager, GameRow, Gems,
+    Coins, EffectsManager, EffectsRow, GamblingGoalsRow, GamblingItem, GameManager, GameRow, Gems,
     ItemInventory, MaxBet, MineHourly, Mining, Stamina, VerifyBet,
 };
 pub use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
