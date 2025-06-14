@@ -61,7 +61,7 @@ impl GoalHandler {
 
         let changed = all_goals
             .iter_mut()
-            .filter(|goal| !goal.completed())
+            .filter(|goal| !goal.is_complete())
             .filter_map(|goal| {
                 GOAL_REGISTRY
                     .get_definition(goal.goal_id())
@@ -79,11 +79,11 @@ impl GoalHandler {
 
         changed
             .iter()
-            .filter(|goal| goal.completed())
+            .filter(|goal| goal.is_complete())
             .for_each(|_| row.add_coins(5_000));
 
         if !changed.is_empty() {
-            if all_goals.iter().all(|row| row.completed()) {
+            if all_goals.iter().all(|row| row.is_complete()) {
                 row.add_gems(1);
             }
 

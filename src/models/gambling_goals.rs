@@ -15,6 +15,18 @@ pub struct GamblingGoalsRow {
 }
 
 impl GamblingGoalsRow {
+    pub fn new(user_id: impl Into<UserId>, goal_id: impl Into<String>, target: i64) -> Self {
+        let user_id = user_id.into();
+
+        Self {
+            user_id: user_id.get() as i64,
+            goal_id: goal_id.into(),
+            day: Utc::now().date_naive(),
+            progress: 0,
+            target,
+        }
+    }
+
     pub fn goal_id(&self) -> &str {
         &self.goal_id
     }
@@ -39,24 +51,6 @@ impl GamblingGoalsRow {
     pub fn is_complete(&self) -> bool {
         self.progress == self.target
     }
-}
-
-impl GamblingGoalsRow {
-    pub fn new(user_id: impl Into<UserId>, goal_id: impl Into<String>, target: i64) -> Self {
-        let user_id = user_id.into();
-
-        Self {
-            user_id: user_id.get() as i64,
-            goal_id: goal_id.into(),
-            day: Utc::now().date_naive(),
-            progress: 0,
-            target,
-        }
-    }
-
-    pub fn completed(&self) -> bool {
-        self.progress == self.target
-    }
 
     pub fn description(&self) -> String {
         let title = if let Some(goal) = GOAL_REGISTRY.get_definition(&self.goal_id) {
@@ -68,6 +62,10 @@ impl GamblingGoalsRow {
         let progress_str = self.progress.format();
         let target_str = self.target.format();
 
-        format!("**{title}**\nProgress: `{progress_str}/{target_str}`")
+        if self.is_complete() {
+            format!("~~**{title}**~~\nProgress: Done 🟢")
+        } else {
+            format!("**{title}**\nProgress: `{progress_str}/{target_str}`")
+        }
     }
 }
