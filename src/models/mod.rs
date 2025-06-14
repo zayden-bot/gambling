@@ -199,7 +199,11 @@ pub trait Mining {
         .map(|(unit, amount)| {
             let max = *max_values.get(unit).unwrap();
             let display = match unit {
-                _ if amount > 1 => format!("{unit}s"),
+                "land" => String::from("plots of land"),
+                "country" => String::from("countries"),
+                "solar_system" => String::from("solar systems"),
+                "galaxy" => String::from("galaxies"),
+                _ if max > 1 => format!("{unit}s"),
                 _ => unit.to_string(),
             };
 
