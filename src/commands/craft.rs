@@ -6,7 +6,7 @@ use serenity::all::{
 use sqlx::any::AnyQueryResult;
 use sqlx::prelude::FromRow;
 use sqlx::{Database, Pool};
-use zayden_core::parse_options;
+use zayden_core::{FormatNum, parse_options};
 
 use crate::shop::ShopCurrency;
 use crate::{Error, Result};
@@ -143,7 +143,9 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "Crafted `{amount}` {item:?}s\nYou now  have `{quantity}` {item:?}s"
+                "Crafted `{}` {item:?}s\nYou now  have `{}` {item:?}s",
+                amount.format(),
+                quantity.format()
             ))
             .colour(Colour::ORANGE);
 
@@ -188,13 +190,13 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
     ]
     .into_iter()
     .map(|item| match item {
-        ShopCurrency::Coal => (item, row.coal),
-        ShopCurrency::Iron => (item, row.iron),
-        ShopCurrency::Gold => (item, row.gold),
-        ShopCurrency::Redstone => (item, row.redstone),
-        ShopCurrency::Lapis => (item, row.lapis),
-        ShopCurrency::Diamonds => (item, row.diamonds),
-        ShopCurrency::Emeralds => (item, row.emeralds),
+        ShopCurrency::Coal => (item, row.coal.format()),
+        ShopCurrency::Iron => (item, row.iron.format()),
+        ShopCurrency::Gold => (item, row.gold.format()),
+        ShopCurrency::Redstone => (item, row.redstone.format()),
+        ShopCurrency::Lapis => (item, row.lapis.format()),
+        ShopCurrency::Diamonds => (item, row.diamonds.format()),
+        ShopCurrency::Emeralds => (item, row.emeralds.format()),
         _ => unreachable!(),
     })
     .map(|(item, owned)| format!("`{owned}` {item}"))
@@ -210,9 +212,9 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
         ]
         .into_iter()
         .map(|item| match item {
-            ShopCurrency::Tech => (item, row.tech),
-            ShopCurrency::Utility => (item, row.utility),
-            ShopCurrency::Production => (item, row.production),
+            ShopCurrency::Tech => (item, row.tech.format()),
+            ShopCurrency::Utility => (item, row.utility.format()),
+            ShopCurrency::Production => (item, row.production.format()),
             _ => unreachable!(),
         })
         .map(|(item, owned)| {

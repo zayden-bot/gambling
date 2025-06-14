@@ -8,6 +8,7 @@ use serenity::all::{
     UserId,
 };
 use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
+use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event};
 use crate::shop::ShopCurrency;
@@ -224,7 +225,9 @@ impl Commands {
                             "emeralds" => (ShopCurrency::Emeralds, v, k),
                             s => unreachable!("Invalid resource: {s}"),
                         })
-                        .map(|(currency, amount, name)| format!("{currency} `{amount}` {name}",))
+                        .map(|(currency, amount, name)| {
+                            format!("{currency} `{}` {name}", amount.format())
+                        })
                         .collect::<Vec<_>>();
 
                     if found.is_empty() {
