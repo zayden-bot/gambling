@@ -108,7 +108,7 @@ const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
     });
 
 const WIN_MAX_BET: GoalDefinition = GoalDefinition::new("winmaxbet")
-    .set_target(|row| row.level() as i64 * 10_000)
+    .set_target(|row| row.max_bet().min(row.coins()))
     .set_description(|t| format!("Win {} coins", t.format()))
     .set_update_fn(|goal, event| {
         let Event::Game(event) = event else {
