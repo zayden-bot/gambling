@@ -21,7 +21,7 @@ const COAL_PER_CHUNK: f64 = 141.0;
 const IRON_PER_CHUNK: f64 = 77.0;
 const GOLD_PER_CHUNK: f64 = 8.3;
 const REDSTONE_PER_CHUNK: f64 = 7.8;
-const LAPIS_PER_CHUNK: f64 = 4.3;
+const LAPIS_PER_CHUNK: f64 = 3.9;
 const DIAMOND_PER_CHUNK: f64 = 3.7;
 const EMERALDS_PER_CHUNK: f64 = 3.0;
 
@@ -177,14 +177,19 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let base_value = row.miners.unwrap_or_default() as f64 * 10.0;
         let prestige_multiplier = 1.0 + row.prestige() as f64 * 0.01;
-        let num_attempts = (base_value * prestige_multiplier) as u64;
+        let num_attempts = (row.miners.unwrap_or_default() as f64 * prestige_multiplier) as u64;
 
-        for (resource, chance) in CHANCES.iter() {
-            *resources.get_mut(resource).unwrap() += Binomial::new(num_attempts, *chance)
+        for (&resource, chance) in CHANCES.iter() {
+            let ore = Binomial::new(num_attempts, *chance)
                 .unwrap()
                 .sample(&mut rng()) as i64;
+
+            *resources.get_mut(resource).unwrap() += match resource {
+                "lapis" => ore * 6,    // Drops per ore
+                "redstone" => ore * 4, // Drops per ore
+                _ => ore,
+            };
         }
 
         resources.iter().for_each(|(&k, &v)| match k {
