@@ -187,7 +187,7 @@ pub trait Mining {
 
         [
             ("miner", self.miners()),
-            ("mines", self.mines()),
+            ("mine", self.mines()),
             ("land", self.land()),
             ("country", self.countries()),
             ("continent", self.continents()),
