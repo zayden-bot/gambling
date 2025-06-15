@@ -162,6 +162,7 @@ impl<'a> ShopItem<'a> {
         id: &'a str,
         name: &'a str,
         emoji: &'a str,
+        desc: &'a str,
         cost: i64,
         currency: ShopCurrency,
         category: ShopPage,
@@ -170,7 +171,7 @@ impl<'a> ShopItem<'a> {
             id,
             name,
             emoji,
-            description: "",
+            description: desc,
             cost: [Some((cost, currency)), None, None, None],
             category,
             sellable: false,
@@ -178,11 +179,6 @@ impl<'a> ShopItem<'a> {
             effect_fn: |_, payout| payout,
             effect_duration: None,
         }
-    }
-
-    const fn description(mut self, desc: &'a str) -> ShopItem<'a> {
-        self.description = desc;
-        self
     }
 
     const fn add_cost(mut self, cost: i64, currency: ShopCurrency) -> ShopItem<'a> {
@@ -264,32 +260,32 @@ pub const LOTTO_TICKET: ShopItem = ShopItem::new(
     "lottoticket",
     "Lottery Ticket",
     "🎟️",
+    "Enter the daily lottery.\nThe more tickets bought have the higher the jackpot.",
     5_000,
     ShopCurrency::Coins,
     ShopPage::Item,
-)
-.description("Enter the daily lottery.\nThe more tickets bought have the higher the jackpot.");
+);
 
 pub const EGGPLANT: ShopItem = ShopItem::new(
     "eggplant",
     "Eggplant",
     "🍆",
+    "Who has the biggest eggplant?",
     10_000,
     ShopCurrency::Coins,
     ShopPage::Item,
 )
-.description("Who has the biggest eggplant?")
 .sellable(true);
 
 pub const WEAPON_CRATE: ShopItem = ShopItem::new(
     "weaponcrate",
     "Weapon Crate",
     "📦",
+    "Unlock for a weapon to display on your profile",
     100_000,
     ShopCurrency::Coins,
     ShopPage::Item,
 )
-.description("Unlock for a weapon to display on your profile")
 .sellable(true)
 .useable(true);
 
@@ -297,11 +293,11 @@ pub const LUCKY_CHIP: ShopItem = ShopItem::new(
     "luckychip",
     "Lucky Chip",
     "⭐",
+    "Save your coins against a loss",
     3,
     ShopCurrency::Gems,
     ShopPage::Boost1,
 )
-.description("Save your coins against a loss")
 .useable(true)
 .effect_fn(|bet, _| bet);
 
@@ -309,21 +305,21 @@ const RIGGED_LUCK: ShopItem = ShopItem::new(
     "riggedluck",
     "Rigged Luck",
     "⚪",
+    "Double your chances! Your win probability is increased by 100% for the next game. (Max 75% total win chance)",
     30,
     ShopCurrency::Gems,
     ShopPage::Boost1,
-).description("Double your chances! Your win probability is increased by 100% for the next game. (Max 75% total win chance)")
-.useable(true);
+).useable(true);
 
 const PROFIT_X2: ShopItem = ShopItem::new(
     "profit2x",
     "Profit x2",
     "⚪",
+    "Double profit from winning | Duration: `+15 minute`",
     2,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Double profit from winning | Duration: `+15 minute`")
 .useable(true)
 .effect_fn(|_, payout| {
     if payout < 0 {
@@ -338,11 +334,11 @@ const PROFIT_X5: ShopItem = ShopItem::new(
     "profit5x",
     "Profit x5",
     "⚪",
+    "Five times profit from winning | Duration: `+10 minute`",
     5,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Five times profit from winning | Duration: `+10 minute`")
 .useable(true)
 .effect_fn(|_, payout| {
     if payout < 0 {
@@ -357,11 +353,11 @@ const PROFIT_X10: ShopItem = ShopItem::new(
     "profit10x",
     "Profit x10",
     "⚪",
+    "Ten times profit from winning | Duration: `+5 minute`",
     10,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Ten times profit from winning | Duration: `+5 minute`")
 .useable(true)
 .effect_fn(|_, payout| {
     if payout < 0 {
@@ -376,11 +372,11 @@ const PROFIT_X50: ShopItem = ShopItem::new(
     "profit50x",
     "Profit x50",
     "⚪",
+    "Fifty times profit from winning | Duration: `+2 minute`",
     25,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("Fifty times profit from winning | Duration: `+2 minute`")
 .useable(true)
 .effect_fn(|_, payout| {
     if payout < 0 {
@@ -395,11 +391,11 @@ const PROFIT_X100: ShopItem = ShopItem::new(
     "profit100x",
     "Profit x100",
     "⚪",
+    "One hundered times profit from winning | Duration: `+1 minute`",
     50,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
-.description("One hundered times profit from winning | Duration: `+1 minute`")
 .useable(true)
 .effect_fn(|_, payout| {
     if payout < 0 {
@@ -425,6 +421,7 @@ const MINER: ShopItem = ShopItem::new(
     "miner",
     "Miner",
     "",
+    "Increases passive mine income and boosts resource gains from dig",
     MINER_COST,
     ShopCurrency::Coins,
     ShopPage::Mine1,
@@ -434,6 +431,7 @@ const MINE: ShopItem = ShopItem::new(
     "mine",
     "Mine",
     "",
+    "Allows you to hire 10 extra miners per mine",
     MINE_COST,
     ShopCurrency::Coins,
     ShopPage::Mine1,
@@ -444,6 +442,7 @@ const LAND: ShopItem = ShopItem::new(
     "land",
     "Land",
     "",
+    "Allows you to buy 5 extra mines per land",
     LAND_COST,
     ShopCurrency::Coins,
     ShopPage::Mine1,
@@ -454,6 +453,7 @@ const COUNTRY: ShopItem = ShopItem::new(
     "country",
     "Country",
     "",
+    "Allows you to buy 25 extra plots of land per country",
     COUNTRY_COST,
     ShopCurrency::Coins,
     ShopPage::Mine1,
@@ -465,6 +465,7 @@ const CONTINENT: ShopItem = ShopItem::new(
     "continent",
     "Continent",
     "",
+    "Allows you to buy 50 extra countries per continent",
     CONTINENT_COST,
     ShopCurrency::Coins,
     ShopPage::Mine1,
@@ -477,6 +478,7 @@ const PLANET: ShopItem = ShopItem::new(
     "planet",
     "Planet",
     "",
+    "Allows you to buy 7 extra continents per planet",
     PLANET_COST,
     ShopCurrency::Coins,
     ShopPage::Mine2,
@@ -489,6 +491,7 @@ const SOLAR_SYSTEM: ShopItem = ShopItem::new(
     "solarsystem",
     "Solar System",
     "",
+    "Allows you to buy 8 extra planets per solar system",
     SOLAR_SYSTEM_COST,
     ShopCurrency::Coins,
     ShopPage::Mine2,
@@ -501,6 +504,7 @@ const GALAXY: ShopItem = ShopItem::new(
     "galaxy",
     "Galaxy",
     "",
+    "Allows you to buy 100 extra planets per solar system",
     GALAXY_COST,
     ShopCurrency::Coins,
     ShopPage::Mine2,
@@ -513,6 +517,7 @@ const UNIVERSE: ShopItem = ShopItem::new(
     "universe",
     "Universe",
     "",
+    "Allows you to buy 255 extra galaxies per universe",
     UNIVERSE_COST,
     ShopCurrency::Coins,
     ShopPage::Mine2,
