@@ -26,7 +26,7 @@ use crate::{
 
 use super::Commands;
 
-const BUYIN: i64 = 100;
+const BUYIN: i64 = 1000;
 
 static NUM_TO_CARDS: LazyLock<HashMap<u8, [EmojiId; 4]>> = LazyLock::new(|| {
     HashMap::from([
@@ -101,7 +101,7 @@ impl Commands {
             .timeout(Duration::from_secs(120))
             .stream();
 
-        let mut payout = -BUYIN;
+        let mut payout = 0;
         let mut prev_seq = String::new();
 
         while let Some(interaction) = stream.next().await {
@@ -258,7 +258,7 @@ async fn higher(
 
     if winner {
         seq.push('☝');
-        payout += 100
+        payout += 1000
     } else {
         seq.push('❌');
     }
@@ -297,7 +297,7 @@ async fn lower(
 
     if winner {
         seq.push('👇');
-        payout += 100
+        payout += 1000
     } else {
         seq.push('❌');
     }
