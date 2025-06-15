@@ -3,7 +3,7 @@ use sqlx::FromRow;
 
 use crate::ShopItem;
 
-#[derive(Default, FromRow, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, FromRow)]
 pub struct GamblingItem {
     pub quantity: i64,
     pub item_id: String,

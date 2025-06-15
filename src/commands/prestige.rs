@@ -162,6 +162,8 @@ impl Commands {
 
                 row.prestige();
 
+                println!("New Inv: {:?}", row.inventory);
+
                 Manager::save(pool, row).await.unwrap();
 
                 component
