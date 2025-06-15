@@ -38,7 +38,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "❌ You need at least {} miners before you can prestige.\nYou only have {}",
+                "❌ You need at least `{}` miners before you can prestige.\nYou only have `{}`",
                 MINERS.format(),
                 row.miners.format()
             ))
