@@ -66,9 +66,11 @@ impl PrestigeRow {
             .as_mut()
             .unwrap_or(&mut Json(Vec::new()))
             .retain(|item| {
-                SHOP_ITEMS
+                let is_sellable = SHOP_ITEMS
                     .get(&item.item_id)
-                    .is_none_or(|item| !item.sellable || item.id != LOTTO_TICKET.id)
+                    .is_some_and(|shop_item_data| shop_item_data.sellable);
+
+                item.item_id != LOTTO_TICKET.id && !is_sellable
             });
         self.miners = 0;
         self.mines = 0;
