@@ -11,7 +11,7 @@ use serenity::all::{
     EditInteractionResponse, EmojiId, parse_emoji,
 };
 use sqlx::{Database, Pool};
-use zayden_core::{ActiveMessages, FormatNum};
+use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event, GameEvent};
 use crate::{
@@ -58,13 +58,6 @@ impl Commands {
     ) -> Result<()> {
         interaction.defer(ctx).await.unwrap();
 
-        {
-            let data = ctx.data.read().await;
-            if let Some(data) = data.get::<ActiveMessages>() {
-                data.check("higherlower")?;
-            }
-        };
-
         let mut row = GameHandler::row(pool, interaction.user.id)
             .await
             .unwrap()
@@ -86,7 +79,7 @@ impl Commands {
         let (&num, emojis) = NUM_TO_CARDS.iter().choose(&mut rng()).unwrap();
         let &emoji = emojis.choose(&mut rng()).unwrap();
 
-        let embed = create_embed(&format!("<:{num}:{emoji}>"), -BUYIN, true);
+        let embed = create_embed(&format!("<:{num}:{emoji}>"), 0, true);
 
         let higher_btn = CreateButton::new("hol_higher").emoji('☝').label("Higher");
         let lower_btn = CreateButton::new("hol_lower").emoji('👇').label("Lower");
@@ -101,13 +94,6 @@ impl Commands {
             )
             .await
             .unwrap();
-
-        {
-            let mut data = ctx.data.write().await;
-            data.entry::<ActiveMessages>()
-                .or_insert(ActiveMessages::default())
-                .insert("higherlower", msg.id);
-        }
 
         let mut stream = msg
             .await_component_interactions(ctx)
@@ -181,13 +167,6 @@ impl Commands {
             if !winner {
                 break;
             }
-        }
-
-        {
-            let mut data = ctx.data.write().await;
-            data.entry::<ActiveMessages>()
-                .or_insert(ActiveMessages::default())
-                .remove("prestige");
         }
 
         let mut row = GameHandler::row(pool, interaction.user.id)
