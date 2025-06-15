@@ -293,7 +293,7 @@ pub const LUCKY_CHIP: ShopItem = ShopItem::new(
     "luckychip",
     "Lucky Chip",
     "⭐",
-    "Save your coins against a loss",
+    "Refund your bet if you lose",
     3,
     ShopCurrency::Gems,
     ShopPage::Boost1,
@@ -311,11 +311,11 @@ const RIGGED_LUCK: ShopItem = ShopItem::new(
     ShopPage::Boost1,
 ).useable(true);
 
-const PROFIT_X2: ShopItem = ShopItem::new(
-    "profit2x",
+const PAYOUT_X2: ShopItem = ShopItem::new(
+    "payout2x",
     "Profit x2",
     "⚪",
-    "Double profit from winning | Duration: `+15 minute`",
+    "Double payout from winning | Duration: `+15 minute`",
     2,
     ShopCurrency::Gems,
     ShopPage::Boost2,
@@ -330,11 +330,11 @@ const PROFIT_X2: ShopItem = ShopItem::new(
 })
 .duration(Duration::from_secs(15 * 60));
 
-const PROFIT_X5: ShopItem = ShopItem::new(
-    "profit5x",
+const PAYOUT_X5: ShopItem = ShopItem::new(
+    "payout5x",
     "Profit x5",
     "⚪",
-    "Five times profit from winning | Duration: `+10 minute`",
+    "Five times payout from winning | Duration: `+10 minute`",
     5,
     ShopCurrency::Gems,
     ShopPage::Boost2,
@@ -349,11 +349,11 @@ const PROFIT_X5: ShopItem = ShopItem::new(
 })
 .duration(Duration::from_secs(10 * 60));
 
-const PROFIT_X10: ShopItem = ShopItem::new(
-    "profit10x",
+const PAYOUT_X10: ShopItem = ShopItem::new(
+    "payout10x",
     "Profit x10",
     "⚪",
-    "Ten times profit from winning | Duration: `+5 minute`",
+    "Ten times payout from winning | Duration: `+5 minute`",
     10,
     ShopCurrency::Gems,
     ShopPage::Boost2,
@@ -368,11 +368,11 @@ const PROFIT_X10: ShopItem = ShopItem::new(
 })
 .duration(Duration::from_secs(5 * 60));
 
-const PROFIT_X50: ShopItem = ShopItem::new(
-    "profit50x",
+const PAYOUT_X50: ShopItem = ShopItem::new(
+    "payout50x",
     "Profit x50",
     "⚪",
-    "Fifty times profit from winning | Duration: `+2 minute`",
+    "Fifty times payout from winning | Duration: `+2 minute`",
     25,
     ShopCurrency::Gems,
     ShopPage::Boost2,
@@ -387,11 +387,11 @@ const PROFIT_X50: ShopItem = ShopItem::new(
 })
 .duration(Duration::from_secs(2 * 60));
 
-const PROFIT_X100: ShopItem = ShopItem::new(
-    "profit100x",
+const PAYOUT_X100: ShopItem = ShopItem::new(
+    "payout100x",
     "Profit x100",
     "⚪",
-    "One hundered times profit from winning | Duration: `+1 minute`",
+    "One hundered times payout from winning | Duration: `+1 minute`",
     50,
     ShopCurrency::Gems,
     ShopPage::Boost2,
@@ -549,11 +549,11 @@ pub const SHOP_ITEMS: ShopItems = ShopItems([
     // WEAPON_CRATE,
     LUCKY_CHIP,
     // RIGGED_LUCK,
-    PROFIT_X2,
-    PROFIT_X5,
-    PROFIT_X10,
-    PROFIT_X50,
-    PROFIT_X100,
+    PAYOUT_X2,
+    PAYOUT_X5,
+    PAYOUT_X10,
+    PAYOUT_X50,
+    PAYOUT_X100,
     MINER,
     MINE,
     LAND,
