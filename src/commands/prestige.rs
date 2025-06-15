@@ -146,6 +146,7 @@ impl Commands {
 
         let mut stream = msg
             .await_component_interactions(ctx)
+            .author_id(interaction.user.id)
             .timeout(Duration::from_secs(120))
             .stream();
 
@@ -165,7 +166,8 @@ impl Commands {
                         ctx,
                         CreateInteractionResponse::UpdateMessage(
                             CreateInteractionResponseMessage::new()
-                                .content("Done")
+                                .content("Done (message wip)")
+                                .embeds(Vec::new())
                                 .components(Vec::new()),
                         ),
                     )
