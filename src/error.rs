@@ -1,3 +1,4 @@
+use zayden_core::Error as ZaydenError;
 use zayden_core::FormatNum;
 
 use crate::ShopCurrency;
@@ -6,6 +7,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
+    MessageConflict,
+
     PremiumRequired,
     InsufficientFunds {
         required: i64,
@@ -34,6 +37,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            Error::MessageConflict => ZaydenError::MessageConflict.fmt(f),
             Error::PremiumRequired => write!(f, "Sorry, only supporters can use this option"),
             Error::InsufficientFunds { required, currency } => write!(
                 f,
@@ -82,6 +86,12 @@ impl std::fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
+
+impl From<zayden_core::Error> for Error {
+    fn from(_value: zayden_core::Error) -> Self {
+        Self::MessageConflict
+    }
+}
 
 impl From<serenity::Error> for Error {
     fn from(value: serenity::Error) -> Self {

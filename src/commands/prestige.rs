@@ -9,7 +9,7 @@ use serenity::all::{
 use sqlx::any::AnyQueryResult;
 use sqlx::types::Json;
 use sqlx::{Database, FromRow, Pool};
-use zayden_core::FormatNum;
+use zayden_core::{ActiveMessages, FormatNum};
 
 use crate::shop::LOTTO_TICKET;
 use crate::{Commands, GamblingItem, Result, SHOP_ITEMS, START_AMOUNT};
@@ -125,6 +125,13 @@ impl Commands {
             return Ok(());
         }
 
+        {
+            let data = ctx.data.read().await;
+            if let Some(data) = data.get::<ActiveMessages>() {
+                data.check("prestige")?;
+            }
+        };
+
         let embed = CreateEmbed::new().description("Are you sure you want to prestige your mine?\n\nPrestiging will **reset your mine, coins, items and resources**, but you'll unlock powerful upgrades!").colour(Colour::TEAL);
 
         let confirm = CreateButton::new("confirm")
@@ -146,6 +153,13 @@ impl Commands {
             )
             .await
             .unwrap();
+
+        {
+            let mut data = ctx.data.write().await;
+            data.entry::<ActiveMessages>()
+                .or_insert(ActiveMessages::default())
+                .insert("prestige", msg.id);
+        }
 
         let mut stream = msg
             .await_component_interactions(ctx)
@@ -179,6 +193,13 @@ impl Commands {
                     .await
                     .unwrap();
 
+                {
+                    let mut data = ctx.data.write().await;
+                    data.entry::<ActiveMessages>()
+                        .or_insert(ActiveMessages::default())
+                        .remove("prestige");
+                }
+
                 return Ok(());
             }
 
@@ -189,6 +210,13 @@ impl Commands {
         }
 
         msg.delete(ctx).await.unwrap();
+
+        {
+            let mut data = ctx.data.write().await;
+            data.entry::<ActiveMessages>()
+                .or_insert(ActiveMessages::default())
+                .remove("prestige");
+        }
 
         Ok(())
     }
