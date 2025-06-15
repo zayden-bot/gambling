@@ -134,6 +134,7 @@ impl Commands {
                 .unwrap()
                 .strip_prefix("Current Payout: ")
                 .unwrap()
+                .replace(',', "")
                 .parse::<i64>()
                 .unwrap();
 
