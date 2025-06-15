@@ -231,6 +231,8 @@ impl Commands {
 }
 
 fn create_embed(seq: &str, payout: i64, winner: bool) -> CreateEmbed {
+    let payout = payout.format();
+
     let desc = if winner {
         format!("{seq}\n\nCurrent Payout: {payout}\n\nGuess the next number!")
     } else {
