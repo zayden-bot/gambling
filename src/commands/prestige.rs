@@ -11,6 +11,7 @@ use sqlx::types::Json;
 use sqlx::{Database, FromRow, Pool};
 use zayden_core::FormatNum;
 
+use crate::shop::LOTTO_TICKET;
 use crate::{Commands, GamblingItem, Result, SHOP_ITEMS, START_AMOUNT};
 
 const MINERS: i64 = 938_810;
@@ -67,7 +68,7 @@ impl PrestigeRow {
             .retain(|item| {
                 SHOP_ITEMS
                     .get(&item.item_id)
-                    .is_none_or(|item_details| !item_details.sellable)
+                    .is_none_or(|item| !item.sellable || item.id != LOTTO_TICKET.id)
             });
         self.miners = 0;
         self.mines = 0;
