@@ -9,6 +9,7 @@ pub mod inventory;
 pub mod leaderboard;
 pub mod lotto;
 pub mod mine;
+pub mod prestige;
 pub mod profile;
 pub mod roll;
 pub mod rps;
