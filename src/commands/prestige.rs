@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use serenity::all::{
-    CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse, UserId,
+    Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
+    UserId,
 };
 use sqlx::{Database, Pool, prelude::FromRow};
 use zayden_core::FormatNum;
@@ -35,11 +36,13 @@ impl Commands {
             .unwrap()
             .unwrap_or_default();
 
-        let embed = CreateEmbed::new().description(format!(
-            "❌ You need at least {} miners before you can prestige.\nYou only have {}",
-            MINERS.format(),
-            row.miners.format()
-        ));
+        let embed = CreateEmbed::new()
+            .description(format!(
+                "❌ You need at least {} miners before you can prestige.\nYou only have {}",
+                MINERS.format(),
+                row.miners.format()
+            ))
+            .colour(Colour::RED);
 
         interaction
             .edit_response(ctx, EditInteractionResponse::new().embed(embed))
