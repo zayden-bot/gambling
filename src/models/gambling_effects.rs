@@ -3,8 +3,7 @@ use chrono::{NaiveDateTime, Utc};
 use serenity::all::UserId;
 use sqlx::{Database, Pool, any::AnyQueryResult};
 
-use crate::ShopPage;
-use crate::shop::{SHOP_ITEMS, ShopItem};
+use crate::shop::{LUCKY_CHIP, SHOP_ITEMS, ShopItem};
 
 #[async_trait]
 pub trait EffectsManager<Db: Database> {
@@ -51,8 +50,9 @@ pub trait EffectsManager<Db: Database> {
 
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
-            if matches!(item.category, ShopPage::Boost1) {
+            if item.id == LUCKY_CHIP.id {
                 payout = (item.effect_fn)(bet, payout);
+                continue;
             }
 
             accumulated_effect_results += (item.effect_fn)(bet, payout);
