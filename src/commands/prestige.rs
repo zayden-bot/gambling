@@ -6,15 +6,19 @@ use serenity::all::{
     ButtonStyle, Colour, CommandInteraction, Context, CreateButton, CreateCommand, CreateEmbed,
     CreateInteractionResponse, CreateInteractionResponseMessage, EditInteractionResponse, UserId,
 };
-use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
+use sqlx::any::AnyQueryResult;
+use sqlx::types::Json;
+use sqlx::{Database, FromRow, Pool};
 use zayden_core::FormatNum;
 
-use crate::{Commands, Result};
+use crate::{Commands, GamblingItem, Result, SHOP_ITEMS, START_AMOUNT};
 
 const MINERS: i64 = 938_810;
 
 #[async_trait]
 pub trait PrestigeManager<Db: Database> {
+    async fn miners(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<i64>>;
+
     async fn row(
         pool: &Pool<Db>,
         id: impl Into<UserId> + Send,
@@ -26,8 +30,66 @@ pub trait PrestigeManager<Db: Database> {
 #[derive(FromRow, Default)]
 pub struct PrestigeRow {
     pub id: i64,
+    pub coins: i64,
+    pub gems: i64,
+    pub stamina: i64,
+    pub inventory: Option<Json<Vec<GamblingItem>>>,
     pub miners: i64,
+    pub mines: i64,
+    pub land: i64,
+    pub countries: i64,
+    pub continents: i64,
+    pub planets: i64,
+    pub solar_systems: i64,
+    pub galaxies: i64,
+    pub universes: i64,
     pub prestige: i64,
+    pub coal: i64,
+    pub iron: i64,
+    pub gold: i64,
+    pub redstone: i64,
+    pub lapis: i64,
+    pub diamonds: i64,
+    pub emeralds: i64,
+    pub tech: i64,
+    pub utility: i64,
+    pub production: i64,
+}
+
+impl PrestigeRow {
+    pub fn prestige(&mut self) {
+        self.coins = START_AMOUNT;
+        self.gems += 1;
+        self.stamina = 3;
+        self.inventory
+            .as_mut()
+            .unwrap_or(&mut Json(Vec::new()))
+            .retain(|item| {
+                SHOP_ITEMS
+                    .get(&item.item_id)
+                    .is_none_or(|item_details| !item_details.sellable)
+            });
+        self.miners = 0;
+        self.mines = 0;
+        self.land = 0;
+        self.countries = 0;
+        self.continents = 0;
+        self.planets = 0;
+        self.solar_systems = 0;
+        self.galaxies = 0;
+        self.universes = 0;
+        self.prestige += 1;
+        self.coal = 0;
+        self.iron = 0;
+        self.gold = 0;
+        self.redstone = 0;
+        self.lapis = 0;
+        self.diamonds = 0;
+        self.emeralds = 0;
+        self.tech = 0;
+        self.utility = 0;
+        self.production = 0;
+    }
 }
 
 impl Commands {
@@ -38,17 +100,17 @@ impl Commands {
     ) -> Result<()> {
         interaction.defer(ctx).await?;
 
-        let mut row = Manager::row(pool, interaction.user.id)
+        let miners = Manager::miners(pool, interaction.user.id)
             .await
             .unwrap()
             .unwrap_or_default();
 
-        if row.miners < MINERS {
+        if miners < MINERS {
             let embed = CreateEmbed::new()
                 .description(format!(
                     "❌ You need at least `{}` miners before you can prestige.\nYou only have `{}`",
                     MINERS.format(),
-                    row.miners.format()
+                    miners.format()
                 ))
                 .colour(Colour::RED);
 
@@ -59,13 +121,13 @@ impl Commands {
 
             return Ok(());
         }
-        // Are you sure you want to **prestige** your mine?\n\nPrestiging will **reset your current mine progress**, but you'll unlock powerful upgrades!
-        let embed = CreateEmbed::new().description("Are you sure you want to **prestige** your mine?\n\nPrestiging will **reset your current mine progress**, but you'll unlock powerful upgrades!").colour(Colour::TEAL);
+
+        let embed = CreateEmbed::new().description("Are you sure you want to prestige your mine?\n\nPrestiging will **reset your mine, coins, items and resources**, but you'll unlock powerful upgrades!").colour(Colour::TEAL);
 
         let confirm = CreateButton::new("confirm")
             .label("Confirm")
             .emoji('✅')
-            .style(ButtonStyle::Primary);
+            .style(ButtonStyle::Secondary);
         let cancel = CreateButton::new("cancel")
             .label("Cancel")
             .emoji('❌')
@@ -89,7 +151,13 @@ impl Commands {
 
         if let Some(component) = stream.next().await {
             if component.data.custom_id == "confirm" {
-                row.prestige += 1;
+                let mut row = Manager::row(pool, interaction.user.id)
+                    .await
+                    .unwrap()
+                    .unwrap_or_else(|| todo!());
+
+                row.prestige();
+
                 Manager::save(pool, row).await.unwrap();
 
                 component
