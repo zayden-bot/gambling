@@ -50,7 +50,7 @@ impl Commands {
         row.bet(bet);
 
         let heads = rand::random_bool(0.5);
-        let winner = matches!(prediction, CoinSide::Heads) && heads;
+        let winner = matches!(prediction, CoinSide::Heads) == heads;
         let edge = rand::random_bool(1.0 / 6000.0);
 
         let mut payout = match (winner, edge) {
