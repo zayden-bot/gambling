@@ -270,7 +270,7 @@ pub trait MineHourly {
         // const SCALING_CONST: f64 = 20.0;
 
         // let base_value = (miners as f64).powf(BASE_EXPONENT) * SCALING_CONST;
-        let prestige_multiplier = 1.0 + self.prestige() as f64 * 0.01;
+        let prestige_multiplier = 1.0 + 0.01 * self.prestige() as f64;
 
         (miners as f64 * prestige_multiplier) as i64
     }

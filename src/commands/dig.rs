@@ -177,7 +177,7 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let prestige_multiplier = 1.0 + row.prestige() as f64 * 0.01;
+        let prestige_multiplier = 1.0 + 0.01 * row.prestige() as f64;
         let num_attempts = (row.miners.unwrap_or_default() as f64 * prestige_multiplier) as u64;
 
         for (&resource, chance) in CHANCES.iter() {
