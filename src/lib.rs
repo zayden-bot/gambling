@@ -46,6 +46,9 @@ const REDSTONE: EmojiId = EmojiId::new(1374524844770857062);
 const LAPIS: EmojiId = EmojiId::new(1383692268959039609);
 const DIAMOND: EmojiId = EmojiId::new(1374523197302505472);
 const EMERALD: EmojiId = EmojiId::new(1374524807491747901);
+const TECH: EmojiId = EmojiId::new(1384190136060874853);
+const UTILITY: EmojiId = EmojiId::new(1384190129421418739);
+const PRODUCTION: EmojiId = EmojiId::new(1384190122320334931);
 
 const CLUBS_2: EmojiId = EmojiId::new(1383692579710701619);
 const CLUBS_3: EmojiId = EmojiId::new(1383692586107015168);

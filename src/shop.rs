@@ -3,7 +3,10 @@ use std::ops::Deref;
 use std::str::FromStr;
 use std::time::Duration;
 
-use crate::{COAL, COIN, DIAMOND, EMERALD, GOLD, GamblingItem, IRON, LAPIS, REDSTONE};
+use crate::{
+    COAL, COIN, DIAMOND, EMERALD, GOLD, GamblingItem, IRON, LAPIS, PRODUCTION, REDSTONE, TECH,
+    UTILITY,
+};
 
 pub const SALES_TAX: f64 = 0.1;
 
@@ -68,9 +71,9 @@ impl Display for ShopCurrency {
         match self {
             Self::Coins => write!(f, "<:coin:{COIN}>"),
             Self::Gems => write!(f, "💎"),
-            Self::Tech => write!(f, "Tech"),
-            Self::Utility => write!(f, "Utility"),
-            Self::Production => write!(f, "Production"),
+            Self::Tech => write!(f, "<:tech:{TECH}>"),
+            Self::Utility => write!(f, "<:utility:{UTILITY}>"),
+            Self::Production => write!(f, "<:production:{PRODUCTION}>"),
             Self::Coal => write!(f, "<:coal:{COAL}>"),
             Self::Iron => write!(f, "<:iron:{IRON}>"),
             Self::Gold => write!(f, "<:gold:{GOLD}>"),
