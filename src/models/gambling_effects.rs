@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use serenity::all::UserId;
 use sqlx::{Database, Pool, any::AnyQueryResult};
 
@@ -10,7 +12,7 @@ pub trait EffectsManager<Db: Database> {
     async fn get_effects(
         conn: &mut Db::Connection,
         user_id: impl Into<UserId> + Send,
-    ) -> sqlx::Result<Vec<EffectsRow>>;
+    ) -> sqlx::Result<HashMap<String, i32>>;
 
     async fn add_effect(
         conn: &mut Db::Connection,
@@ -33,32 +35,27 @@ pub trait EffectsManager<Db: Database> {
         let user_id = user_id.into();
 
         let mut tx = pool.begin().await.unwrap();
-        let effects = Self::get_effects(&mut *tx, user_id).await.unwrap();
+        let mut effects = Self::get_effects(&mut *tx, user_id).await.unwrap();
 
-        let now_naive_utc = Utc::now().naive_utc();
+        {
+            let lucky_chip = effects.remove(LUCKY_CHIP.id);
+            if let Some(id) = lucky_chip {
+                Self::remove_effect(&mut *tx, id).await.unwrap();
 
-        for effect in effects {
-            match effect.expiry {
-                None => {
-                    Self::remove_effect(&mut *tx, effect.id).await.unwrap();
-                }
-                Some(expiry_time) => {
-                    if expiry_time < now_naive_utc {
-                        Self::remove_effect(&mut *tx, effect.id).await.unwrap();
-                        continue;
-                    }
+                if !win {
+                    payout = bet;
                 }
             }
+        }
 
-            let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
+        for (item_id, id) in effects.drain() {
+            Self::remove_effect(&mut *tx, id).await.unwrap();
 
-            if win && effect.item_id.starts_with("payout") && payout > 0 {
+            let item = SHOP_ITEMS.get(&item_id).unwrap();
+
+            if win && item_id.starts_with("payout") {
                 payout += (item.effect_fn)(bet, base_payout);
                 continue;
-            }
-
-            if item.id == LUCKY_CHIP.id && !win {
-                payout = bet;
             }
         }
 
