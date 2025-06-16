@@ -3,9 +3,11 @@ use std::ops::Deref;
 use std::str::FromStr;
 use std::time::Duration;
 
+use serenity::all::EmojiId;
+
 use crate::{
-    COAL, COIN, DIAMOND, EMERALD, GOLD, GamblingItem, IRON, LAPIS, PRODUCTION, REDSTONE, TECH,
-    UTILITY,
+    CHIP_2, CHIP_5, CHIP_10, CHIP_50, CHIP_100, COAL, COIN, DIAMOND, EMERALD, GOLD, GamblingItem,
+    IRON, LAPIS, PRODUCTION, REDSTONE, TECH, UTILITY,
 };
 
 pub const SALES_TAX: f64 = 0.1;
@@ -147,10 +149,17 @@ impl FromStr for ShopPage {
 }
 
 #[derive(Clone, Copy)]
+pub enum Emoji<'a> {
+    Str(&'a str),
+    Id(EmojiId),
+    None,
+}
+
+#[derive(Clone, Copy)]
 pub struct ShopItem<'a> {
     pub id: &'a str,
     pub name: &'a str,
-    pub emoji: &'a str,
+    pub emoji: Emoji<'a>,
     pub description: &'a str,
     pub cost: [Option<(i64, ShopCurrency)>; 4],
     pub category: ShopPage,
@@ -164,7 +173,7 @@ impl<'a> ShopItem<'a> {
     const fn new(
         id: &'a str,
         name: &'a str,
-        emoji: &'a str,
+        emoji: Emoji<'a>,
         desc: &'a str,
         cost: i64,
         currency: ShopCurrency,
@@ -219,9 +228,10 @@ impl<'a> ShopItem<'a> {
     }
 
     pub fn emoji(&self) -> String {
-        match self.emoji.parse::<i64>() {
-            Ok(id) => format!("<:{}:{id}>", self.id),
-            Err(_) => String::from(self.emoji),
+        match self.emoji {
+            Emoji::Id(id) => format!("<:{}:{id}>", self.id),
+            Emoji::Str(emoji) => String::from(emoji),
+            Emoji::None => String::new(),
         }
     }
 
@@ -262,7 +272,7 @@ impl From<&GamblingItem> for ShopItem<'_> {
 pub const LOTTO_TICKET: ShopItem = ShopItem::new(
     "lottoticket",
     "Lottery Ticket",
-    "🎟️",
+    Emoji::Str("🎟️"),
     "Enter the daily lottery.\nThe more tickets bought have the higher the jackpot.",
     5_000,
     ShopCurrency::Coins,
@@ -272,7 +282,7 @@ pub const LOTTO_TICKET: ShopItem = ShopItem::new(
 pub const EGGPLANT: ShopItem = ShopItem::new(
     "eggplant",
     "Eggplant",
-    "🍆",
+    Emoji::Str("🍆"),
     "Who has the biggest eggplant?",
     10_000,
     ShopCurrency::Coins,
@@ -283,7 +293,7 @@ pub const EGGPLANT: ShopItem = ShopItem::new(
 pub const WEAPON_CRATE: ShopItem = ShopItem::new(
     "weaponcrate",
     "Weapon Crate",
-    "📦",
+    Emoji::Str("📦"),
     "Unlock for a weapon to display on your profile",
     100_000,
     ShopCurrency::Coins,
@@ -295,7 +305,7 @@ pub const WEAPON_CRATE: ShopItem = ShopItem::new(
 pub const LUCKY_CHIP: ShopItem = ShopItem::new(
     "luckychip",
     "Lucky Chip",
-    "⭐",
+    Emoji::Str("⭐"),
     "Refund your bet if you lose",
     3,
     ShopCurrency::Gems,
@@ -307,7 +317,7 @@ pub const LUCKY_CHIP: ShopItem = ShopItem::new(
 const RIGGED_LUCK: ShopItem = ShopItem::new(
     "riggedluck",
     "Rigged Luck",
-    "⚪",
+    Emoji::Str("⚪"),
     "Double your chances! Your win probability is increased by 100% for the next game. (Max 75% total win chance)",
     30,
     ShopCurrency::Gems,
@@ -317,7 +327,7 @@ const RIGGED_LUCK: ShopItem = ShopItem::new(
 const PAYOUT_X2: ShopItem = ShopItem::new(
     "payout2x",
     "Payout x2",
-    "⚪",
+    Emoji::Id(CHIP_2),
     "Double payout from winning | Duration: `+15 minute`",
     2,
     ShopCurrency::Gems,
@@ -336,7 +346,7 @@ const PAYOUT_X2: ShopItem = ShopItem::new(
 const PAYOUT_X5: ShopItem = ShopItem::new(
     "payout5x",
     "Payout x5",
-    "⚪",
+    Emoji::Id(CHIP_5),
     "Five times payout from winning | Duration: `+10 minute`",
     5,
     ShopCurrency::Gems,
@@ -355,7 +365,7 @@ const PAYOUT_X5: ShopItem = ShopItem::new(
 const PAYOUT_X10: ShopItem = ShopItem::new(
     "payout10x",
     "Payout x10",
-    "⚪",
+    Emoji::Id(CHIP_10),
     "Ten times payout from winning | Duration: `+5 minute`",
     10,
     ShopCurrency::Gems,
@@ -374,7 +384,7 @@ const PAYOUT_X10: ShopItem = ShopItem::new(
 const PAYOUT_X50: ShopItem = ShopItem::new(
     "payout50x",
     "Payout x50",
-    "⚪",
+    Emoji::Id(CHIP_50),
     "Fifty times payout from winning | Duration: `+2 minute`",
     25,
     ShopCurrency::Gems,
@@ -393,7 +403,7 @@ const PAYOUT_X50: ShopItem = ShopItem::new(
 const PAYOUT_X100: ShopItem = ShopItem::new(
     "payout100x",
     "Payout x100",
-    "⚪",
+    Emoji::Id(CHIP_100),
     "One hundered times payout from winning | Duration: `+1 minute`",
     50,
     ShopCurrency::Gems,
@@ -423,7 +433,7 @@ const UNIVERSE_COST: i64 = GALAXY_COST * 10;
 const MINER: ShopItem = ShopItem::new(
     "miner",
     "Miner",
-    "",
+    Emoji::None,
     "Increases passive mine income and boosts resource gains from dig",
     MINER_COST,
     ShopCurrency::Coins,
@@ -433,7 +443,7 @@ const MINER: ShopItem = ShopItem::new(
 const MINE: ShopItem = ShopItem::new(
     "mine",
     "Mine",
-    "",
+    Emoji::None,
     "Allows you to hire 10 extra miners per mine",
     MINE_COST,
     ShopCurrency::Coins,
@@ -444,7 +454,7 @@ const MINE: ShopItem = ShopItem::new(
 const LAND: ShopItem = ShopItem::new(
     "land",
     "Land",
-    "",
+    Emoji::None,
     "Allows you to buy 5 extra mines per land",
     LAND_COST,
     ShopCurrency::Coins,
@@ -455,7 +465,7 @@ const LAND: ShopItem = ShopItem::new(
 const COUNTRY: ShopItem = ShopItem::new(
     "country",
     "Country",
-    "",
+    Emoji::None,
     "Allows you to buy 25 extra plots of land per country",
     COUNTRY_COST,
     ShopCurrency::Coins,
@@ -467,7 +477,7 @@ const COUNTRY: ShopItem = ShopItem::new(
 const CONTINENT: ShopItem = ShopItem::new(
     "continent",
     "Continent",
-    "",
+    Emoji::None,
     "Allows you to buy 50 extra countries per continent",
     CONTINENT_COST,
     ShopCurrency::Coins,
@@ -480,7 +490,7 @@ const CONTINENT: ShopItem = ShopItem::new(
 const PLANET: ShopItem = ShopItem::new(
     "planet",
     "Planet",
-    "",
+    Emoji::None,
     "Allows you to buy 7 extra continents per planet",
     PLANET_COST,
     ShopCurrency::Coins,
@@ -493,7 +503,7 @@ const PLANET: ShopItem = ShopItem::new(
 const SOLAR_SYSTEM: ShopItem = ShopItem::new(
     "solarsystem",
     "Solar System",
-    "",
+    Emoji::None,
     "Allows you to buy 8 extra planets per solar system",
     SOLAR_SYSTEM_COST,
     ShopCurrency::Coins,
@@ -506,7 +516,7 @@ const SOLAR_SYSTEM: ShopItem = ShopItem::new(
 const GALAXY: ShopItem = ShopItem::new(
     "galaxy",
     "Galaxy",
-    "",
+    Emoji::None,
     "Allows you to buy 100 extra planets per solar system",
     GALAXY_COST,
     ShopCurrency::Coins,
@@ -519,7 +529,7 @@ const GALAXY: ShopItem = ShopItem::new(
 const UNIVERSE: ShopItem = ShopItem::new(
     "universe",
     "Universe",
-    "",
+    Emoji::None,
     "Allows you to buy 255 extra galaxies per universe",
     UNIVERSE_COST,
     ShopCurrency::Coins,

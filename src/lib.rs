@@ -103,6 +103,12 @@ const SPADES_Q: EmojiId = EmojiId::new(1383692919646584852);
 const SPADES_K: EmojiId = EmojiId::new(1383692909768871990);
 const SPADES_A: EmojiId = EmojiId::new(1383692901795500062);
 
+const CHIP_2: EmojiId = EmojiId::new(1384310202534199406);
+const CHIP_5: EmojiId = EmojiId::new(1384310229029879898);
+const CHIP_10: EmojiId = EmojiId::new(1384310221744115835);
+const CHIP_50: EmojiId = EmojiId::new(1384310215398264965);
+const CHIP_100: EmojiId = EmojiId::new(1384310209077444648);
+
 fn tomorrow(now: Option<DateTime<Utc>>) -> i64 {
     now.unwrap_or_else(Utc::now)
         .checked_add_days(Days::new(1))
