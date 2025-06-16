@@ -50,7 +50,9 @@ pub trait EffectsManager<Db: Database> {
 
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
-            if effect.item_id.starts_with("payout") && payout > 0 {
+            if (effect.item_id.starts_with("payout") || effect.item_id.starts_with("profit"))
+                && payout > 0
+            {
                 accumulated_payout += (item.effect_fn)(bet, payout);
                 continue;
             }
