@@ -27,12 +27,13 @@ pub trait EffectsManager<Db: Database> {
         mut payout: i64,
         win: bool,
     ) -> i64 {
+        let base_payout = payout;
+        payout = 0;
+
         let user_id = user_id.into();
 
         let mut tx = pool.begin().await.unwrap();
         let effects = Self::get_effects(&mut *tx, user_id).await.unwrap();
-
-        let mut accumulated_payout = 0;
 
         let now_naive_utc = Utc::now().naive_utc();
 
@@ -54,11 +55,9 @@ pub trait EffectsManager<Db: Database> {
             println!("id: {} | pay: {payout}", effect.item_id);
 
             if win && effect.item_id.starts_with("payout") && payout > 0 {
-                accumulated_payout += (item.effect_fn)(bet, payout);
+                payout += (item.effect_fn)(bet, base_payout);
                 continue;
             }
-
-            payout = accumulated_payout;
 
             if item.id == LUCKY_CHIP.id && !win {
                 payout = bet;
@@ -67,7 +66,7 @@ pub trait EffectsManager<Db: Database> {
 
         tx.commit().await.unwrap();
 
-        payout
+        payout.max(base_payout)
     }
 }
 
