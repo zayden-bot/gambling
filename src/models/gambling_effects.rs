@@ -52,8 +52,6 @@ pub trait EffectsManager<Db: Database> {
 
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
-            println!("id: {} | pay: {payout}", effect.item_id);
-
             if win && effect.item_id.starts_with("payout") && payout > 0 {
                 payout += (item.effect_fn)(bet, base_payout);
                 continue;
