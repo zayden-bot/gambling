@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use rand::distr::weighted::WeightedIndex;
 use rand::rng;
 use rand_distr::Distribution;
-use serenity::all::{ChannelId, CreateMessage, Mentionable, UserId};
+use serenity::all::{ChannelId, CreateEmbed, CreateMessage, Mentionable, UserId};
 use sqlx::any::AnyQueryResult;
 use sqlx::{Database, FromRow};
 use zayden_core::{CronJob, FormatNum};
@@ -95,38 +95,61 @@ impl Lotto {
 
             let mut dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
 
-            let winners = (0..expected_winners).map(|_| {
-                let index = dist.sample(&mut rng());
-                let winner = rows.remove(index);
-                dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
-                winner
-            });
+            let jackpot = jackpot(total_tickets);
+
+            let winners = prize_share
+                .into_iter()
+                .map(|share| {
+                    let index = dist.sample(&mut rng());
+                    let winner = rows.remove(index);
+                    dist = WeightedIndex::new(rows.iter().map(|row| row.quantity())).unwrap();
+                    (winner.user_id(), (jackpot as f64 * share) as i64)
+                })
+                .collect::<Vec<_>>();
 
             Manager::delete_tickets(&mut *tx).await.unwrap();
 
-            let jackpot = jackpot(total_tickets);
+            let mut lines = Vec::with_capacity(expected_winners);
 
-            for (winner, share) in winners.into_iter().zip(prize_share) {
-                let payout = (jackpot as f64 * share) as i64;
+            for (winner, payout) in winners {
+                Manager::add_coins(&mut *tx, winner, payout).await.unwrap();
 
-                Manager::add_coins(&mut *tx, winner.user_id(), payout)
-                    .await
-                    .unwrap();
+                let line = format!(
+                    "{} has won {} <:coin:{COIN}> from the lottery!",
+                    winner.mention(),
+                    payout.format()
+                );
 
-                CHANNEL_ID
-                    .send_message(
-                        &ctx,
-                        CreateMessage::new().content(format!(
-                            "{} has won {} <:coin:{COIN}> from the lottery!",
-                            winner.user_id().mention(),
-                            payout.format()
-                        )),
-                    )
-                    .await
-                    .unwrap();
+                lines.push(line);
             }
 
             tx.commit().await.unwrap();
+
+            let embed = CreateEmbed::new()
+                .title(format!(
+                    "<:coin:{COIN}> <:coin:{COIN}> Lottery!! <:coin:{COIN}> <:coin:{COIN}>"
+                ))
+                .field(
+                    "Tickets Bought",
+                    format!("{} {}", total_tickets.format(), LOTTO_TICKET.emoji()),
+                    false,
+                )
+                .field(
+                    "Jackpot Value",
+                    format!("{} <:coin:{COIN}>", jackpot.format()),
+                    false,
+                );
+
+            CHANNEL_ID
+                .send_message(
+                    &ctx,
+                    CreateMessage::new().content(lines.join("\n")).embed(embed),
+                )
+                .await
+                .unwrap()
+                .crosspost(&ctx)
+                .await
+                .unwrap();
         })
     }
 }
