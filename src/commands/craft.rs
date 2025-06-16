@@ -143,7 +143,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "Crafted `{}` {item:?}s\nYou now  have `{}` {item:?}s",
+                "Crafted {item} `{}` {item:?}s\nYou now  have {item} `{}` {item:?}s",
                 amount.format(),
                 quantity.format()
             ))
