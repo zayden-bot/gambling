@@ -2651,7 +2651,7 @@ dependencies = [
 [[package]]
 name = "zayden-core"
 version = "0.1.0"
-source = "git+https://github.com/zayden-bot/slash-command-core.git?branch=master#1e9bbba76ae73033746f5868f3fb65b46e7dd6ac"
+source = "git+https://github.com/zayden-bot/slash-command-core.git?branch=master#63ef77bed974c6595938e126ea4c519131d0a5fa"
 dependencies = [
  "async-trait",
  "cron",

@@ -197,7 +197,7 @@ impl Commands {
                     let mut data = ctx.data.write().await;
                     data.entry::<ActiveMessages>()
                         .or_insert(ActiveMessages::default())
-                        .remove(&(String::from("prestige"), interaction.user.id));
+                        .remove("prestige", interaction.user.id);
                 }
 
                 return Ok(());
@@ -215,7 +215,7 @@ impl Commands {
             let mut data = ctx.data.write().await;
             data.entry::<ActiveMessages>()
                 .or_insert(ActiveMessages::default())
-                .remove(&(String::from("prestige"), interaction.user.id));
+                .remove("prestige", interaction.user.id);
         }
 
         Ok(())
