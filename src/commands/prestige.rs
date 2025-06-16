@@ -128,7 +128,7 @@ impl Commands {
         {
             let data = ctx.data.read().await;
             if let Some(data) = data.get::<ActiveMessages>() {
-                data.check("prestige")?;
+                data.check("prestige", interaction.user.id)?;
             }
         };
 
@@ -158,7 +158,7 @@ impl Commands {
             let mut data = ctx.data.write().await;
             data.entry::<ActiveMessages>()
                 .or_insert(ActiveMessages::default())
-                .insert("prestige", msg.id);
+                .insert("prestige", interaction.user.id);
         }
 
         let mut stream = msg
@@ -197,7 +197,7 @@ impl Commands {
                     let mut data = ctx.data.write().await;
                     data.entry::<ActiveMessages>()
                         .or_insert(ActiveMessages::default())
-                        .remove("prestige");
+                        .remove(&(String::from("prestige"), interaction.user.id));
                 }
 
                 return Ok(());
@@ -215,7 +215,7 @@ impl Commands {
             let mut data = ctx.data.write().await;
             data.entry::<ActiveMessages>()
                 .or_insert(ActiveMessages::default())
-                .remove("prestige");
+                .remove(&(String::from("prestige"), interaction.user.id));
         }
 
         Ok(())
