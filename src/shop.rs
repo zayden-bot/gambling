@@ -316,7 +316,7 @@ const RIGGED_LUCK: ShopItem = ShopItem::new(
 
 const PAYOUT_X2: ShopItem = ShopItem::new(
     "payout2x",
-    "Profit x2",
+    "Payout x2",
     "⚪",
     "Double payout from winning | Duration: `+15 minute`",
     2,
@@ -335,7 +335,7 @@ const PAYOUT_X2: ShopItem = ShopItem::new(
 
 const PAYOUT_X5: ShopItem = ShopItem::new(
     "payout5x",
-    "Profit x5",
+    "Payout x5",
     "⚪",
     "Five times payout from winning | Duration: `+10 minute`",
     5,
@@ -354,7 +354,7 @@ const PAYOUT_X5: ShopItem = ShopItem::new(
 
 const PAYOUT_X10: ShopItem = ShopItem::new(
     "payout10x",
-    "Profit x10",
+    "Payout x10",
     "⚪",
     "Ten times payout from winning | Duration: `+5 minute`",
     10,
@@ -373,7 +373,7 @@ const PAYOUT_X10: ShopItem = ShopItem::new(
 
 const PAYOUT_X50: ShopItem = ShopItem::new(
     "payout50x",
-    "Profit x50",
+    "Payout x50",
     "⚪",
     "Fifty times payout from winning | Duration: `+2 minute`",
     25,
@@ -392,7 +392,7 @@ const PAYOUT_X50: ShopItem = ShopItem::new(
 
 const PAYOUT_X100: ShopItem = ShopItem::new(
     "payout100x",
-    "Profit x100",
+    "Payout x100",
     "⚪",
     "One hundered times payout from winning | Duration: `+1 minute`",
     50,
