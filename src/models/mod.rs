@@ -244,11 +244,14 @@ pub trait Mining {
 
     fn crafted(&self) -> String {
         format!(
-            "`{}` tech packs
-            `{}` utility packs
-            `{}` production packs",
+            "{} `{}` tech packs
+            {} `{}` utility packs
+            {} `{}` production packs",
+            ShopCurrency::Tech,
             self.tech().format(),
+            ShopCurrency::Utility,
             self.utility().format(),
+            ShopCurrency::Production,
             self.production().format()
         )
     }
