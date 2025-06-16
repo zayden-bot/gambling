@@ -25,6 +25,7 @@ pub trait EffectsManager<Db: Database> {
         user_id: impl Into<UserId> + Send,
         bet: i64,
         mut payout: i64,
+        win: bool,
     ) -> i64 {
         let user_id = user_id.into();
 
@@ -50,6 +51,8 @@ pub trait EffectsManager<Db: Database> {
 
             let item = SHOP_ITEMS.get(&effect.item_id).unwrap();
 
+            println!("id: {} | pay: {payout}", effect.item_id);
+
             if (effect.item_id.starts_with("payout") || effect.item_id.starts_with("profit"))
                 && payout > 0
             {
@@ -59,8 +62,8 @@ pub trait EffectsManager<Db: Database> {
 
             payout = accumulated_payout;
 
-            if item.id == LUCKY_CHIP.id && payout == 0 {
-                payout = (item.effect_fn)(bet, payout)
+            if item.id == LUCKY_CHIP.id && !win {
+                payout = bet;
             }
         }
 
