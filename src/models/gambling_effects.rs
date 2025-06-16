@@ -53,9 +53,7 @@ pub trait EffectsManager<Db: Database> {
 
             println!("id: {} | pay: {payout}", effect.item_id);
 
-            if (effect.item_id.starts_with("payout") || effect.item_id.starts_with("profit"))
-                && payout > 0
-            {
+            if win && effect.item_id.starts_with("payout") && payout > 0 {
                 accumulated_payout += (item.effect_fn)(bet, payout);
                 continue;
             }
