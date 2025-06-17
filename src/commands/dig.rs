@@ -27,13 +27,13 @@ const EMERALDS_PER_CHUNK: f64 = 3.0;
 
 static CHANCES: LazyLock<HashMap<&str, f64>> = LazyLock::new(|| {
     HashMap::from([
-        ("coal", (COAL_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("iron", (IRON_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("gold", (GOLD_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("redstone", (REDSTONE_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("lapis", (LAPIS_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("diamonds", (DIAMOND_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
-        ("emeralds", (EMERALDS_PER_CHUNK / CHUNK_BLOCKS) * 100.0),
+        ("coal", (COAL_PER_CHUNK / CHUNK_BLOCKS)),
+        ("iron", (IRON_PER_CHUNK / CHUNK_BLOCKS)),
+        ("gold", (GOLD_PER_CHUNK / CHUNK_BLOCKS)),
+        ("redstone", (REDSTONE_PER_CHUNK / CHUNK_BLOCKS)),
+        ("lapis", (LAPIS_PER_CHUNK / CHUNK_BLOCKS)),
+        ("diamonds", (DIAMOND_PER_CHUNK / CHUNK_BLOCKS)),
+        ("emeralds", (EMERALDS_PER_CHUNK / CHUNK_BLOCKS)),
     ])
 });
 
@@ -181,7 +181,7 @@ impl Commands {
         let num_attempts = (row.miners.unwrap_or_default() as f64 * prestige_multiplier) as u64;
 
         for (&resource, chance) in CHANCES.iter() {
-            let ore = Binomial::new(num_attempts, *chance)
+            let ore = Binomial::new(num_attempts, chance * 75.0)
                 .unwrap()
                 .sample(&mut rng()) as i64;
 
