@@ -104,6 +104,7 @@ const SPADES_Q: EmojiId = EmojiId::new(1383692919646584852);
 const SPADES_K: EmojiId = EmojiId::new(1383692909768871990);
 
 const CARD_DECK: [EmojiId; 52] = [
+    CLUBS_A,
     CLUBS_2,
     CLUBS_3,
     CLUBS_4,
@@ -116,7 +117,7 @@ const CARD_DECK: [EmojiId; 52] = [
     CLUBS_J,
     CLUBS_Q,
     CLUBS_K,
-    CLUBS_A,
+    DIAMONDS_A,
     DIAMONDS_2,
     DIAMONDS_3,
     DIAMONDS_4,
@@ -129,7 +130,7 @@ const CARD_DECK: [EmojiId; 52] = [
     DIAMONDS_J,
     DIAMONDS_Q,
     DIAMONDS_K,
-    DIAMONDS_A,
+    HEARTS_A,
     HEARTS_2,
     HEARTS_3,
     HEARTS_4,
@@ -142,7 +143,7 @@ const CARD_DECK: [EmojiId; 52] = [
     HEARTS_J,
     HEARTS_Q,
     HEARTS_K,
-    HEARTS_A,
+    SPADES_A,
     SPADES_2,
     SPADES_3,
     SPADES_4,
@@ -155,7 +156,6 @@ const CARD_DECK: [EmojiId; 52] = [
     SPADES_J,
     SPADES_Q,
     SPADES_K,
-    SPADES_A,
 ];
 
 const CHIP_2: EmojiId = EmojiId::new(1384310202534199406);

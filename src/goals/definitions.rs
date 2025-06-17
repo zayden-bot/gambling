@@ -91,7 +91,7 @@ const WIN_10: GoalDefinition = GoalDefinition::new("gift")
     });
 
 const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
-    .set_target(|_| rand::random_range(3..=7))
+    .set_target(|_| rand::random_range(4..=8))
     .set_description(|t| format!("Hit a streak of {t}x on Higher or Lower"))
     .set_update_fn(|goal: &mut GamblingGoalsRow, event: &Event| {
         let Event::Game(event) = event else {

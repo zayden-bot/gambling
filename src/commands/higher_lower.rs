@@ -15,7 +15,8 @@ use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event, GameEvent};
 use crate::{
-    CARD_DECK, Coins, Error, GameCache, GameManager, GameRow, GoalsManager, Result, ShopCurrency,
+    CARD_DECK, Coins, Error, GameCache, GameManager, GameRow, Gems, GoalsManager, Result,
+    ShopCurrency,
 };
 
 use super::Commands;
@@ -106,7 +107,10 @@ impl Commands {
             let prev_emoji = parse_emoji(prev_seq.split(' ').next_back().unwrap()).unwrap();
             let prev_num = prev_emoji.name.parse::<u8>().unwrap();
 
-            let emoji = deck.pop().unwrap();
+            let emoji = match deck.pop() {
+                Some(emoji) => emoji,
+                None => break,
+            };
             let num = *CARD_TO_NUM.get(&emoji).unwrap();
 
             payout = desc_iter
@@ -155,6 +159,9 @@ impl Commands {
             .unwrap();
 
         row.add_coins(payout);
+        if payout == 52 * BUYIN {
+            row.add_gems(1);
+        }
 
         let colour = if payout > 0 {
             Colour::DARK_GREEN
