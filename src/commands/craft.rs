@@ -179,37 +179,26 @@ impl Commands {
 }
 
 async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
-    let mut desc = [
+    let mut desc = format!(
+        "`{}` {}        `{}` {}
+        `{}` {}         `{}` {}
+        `{}` {}         `{}` {}
+        `{}` {}",
+        row.coal.format(),
         ShopCurrency::Coal,
+        row.iron.format(),
         ShopCurrency::Iron,
+        row.gold.format(),
         ShopCurrency::Gold,
+        row.redstone.format(),
         ShopCurrency::Redstone,
+        row.lapis.format(),
         ShopCurrency::Lapis,
+        row.diamonds.format(),
         ShopCurrency::Diamonds,
-        ShopCurrency::Emeralds,
-    ]
-    .chunks(2)
-    .map(|items| {
-        items.iter().map(|item| match item {
-            ShopCurrency::Coal => (item, row.coal.format()),
-            ShopCurrency::Iron => (item, row.iron.format()),
-            ShopCurrency::Gold => (item, row.gold.format()),
-            ShopCurrency::Redstone => (item, row.redstone.format()),
-            ShopCurrency::Lapis => (item, row.lapis.format()),
-            ShopCurrency::Diamonds => (item, row.diamonds.format()),
-            ShopCurrency::Emeralds => (item, row.emeralds.format()),
-            _ => unreachable!(),
-        })
-    })
-    .map(|items| {
-        items
-            .map(|(item, owned)| format!("`{owned}` {item}"))
-            .collect::<Vec<_>>()
-            .join("    |    ")
-    })
-    .collect::<Vec<_>>()
-    .join("\n");
-    desc.push_str("\n------------------\n");
+        row.emeralds.format(),
+        ShopCurrency::Emeralds
+    );
 
     desc.push_str(
         &[
