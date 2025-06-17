@@ -179,30 +179,30 @@ impl Commands {
 }
 
 async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
-    const SPACING: usize = 12;
+    const SPACING: usize = 6;
 
     let coal_amt = row.coal.format();
     let gold_amt = row.gold.format();
     let lapis_amt = row.lapis.format();
 
     let mut desc = format!(
-        "`{}` {}ㅤ{}ㅤ`{}` {}
+        "`{}` {}{}ㅤ`{}` {}
         `{}` {}ㅤ{}ㅤ`{}` {}
         `{}` {}ㅤ{}ㅤ`{}` {}
         `{}` {}",
         coal_amt,
         ShopCurrency::Coal,
-        " ".repeat(SPACING - coal_amt.len()),
+        "ㅤ".repeat(SPACING - coal_amt.len()),
         row.iron.format(),
         ShopCurrency::Iron,
         gold_amt,
         ShopCurrency::Gold,
-        " ".repeat(SPACING - gold_amt.len()),
+        "ㅤ".repeat(SPACING - gold_amt.len()),
         row.redstone.format(),
         ShopCurrency::Redstone,
         lapis_amt,
         ShopCurrency::Lapis,
-        " ".repeat(SPACING - lapis_amt.len()),
+        "ㅤ".repeat(SPACING - lapis_amt.len()),
         row.diamonds.format(),
         ShopCurrency::Diamonds,
         row.emeralds.format(),
