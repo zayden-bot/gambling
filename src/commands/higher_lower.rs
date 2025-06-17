@@ -159,7 +159,9 @@ impl Commands {
             .unwrap();
 
         row.add_coins(payout);
-        if payout == 52 * BUYIN {
+
+        // 51 as the user starts at -1000
+        if payout == 51 * BUYIN {
             row.add_gems(1);
         }
 
