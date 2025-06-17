@@ -209,7 +209,7 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
                         _ => unreachable!("Invalid shop currency"),
                     }
                 })
-                .map(|(currency, cost, owned)| format!("`{cost}` {currency}ㅤㅤㅤ(`{owned}`)"))
+                .map(|(currency, cost, owned)| format!("`{cost}` {currency}ㅤㅤ(`{owned}`)"))
                 .collect::<Vec<_>>()
                 .join("\n")
         )
