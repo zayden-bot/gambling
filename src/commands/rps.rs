@@ -85,13 +85,7 @@ impl Commands {
             "Rock 🪨 Paper 🗞️ Scissors ✂ - You Tied!"
         };
 
-        let result = if payout == 0 {
-            "No change".to_string()
-        } else if winner == Some(true) {
-            format!("Payout: {bet}")
-        } else {
-            format!("Lost: {bet}")
-        };
+        let result = format!("Payout: {bet}");
 
         let desc = format!(
             "Your bet: {} <:coin:{COIN}>\n\n**You picked:** {}\n**Zayden picked:** {}\n\n{result}\nYour coins: {}",

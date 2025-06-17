@@ -57,15 +57,16 @@ impl Commands {
 
         let roll = rand::random_range(1..=n_sides);
 
-        let (title, result, mut payout, colour) = if roll == prediction {
+        let result = "Payout:";
+
+        let (title, mut payout, colour) = if roll == prediction {
             (
                 "🎲 Dice Roll 🎲 - You Won!",
-                "Payout:",
                 bet * n_sides,
                 Colour::DARK_GREEN,
             )
         } else {
-            ("🎲 Dice Roll 🎲 - You Lost!", "Lost:", -bet, Colour::RED)
+            ("🎲 Dice Roll 🎲 - You Lost!", 0, Colour::RED)
         };
 
         Dispatch::<Db, GoalHandler>::new(pool)

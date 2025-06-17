@@ -185,11 +185,7 @@ impl Commands {
         GameHandler::save(pool, row).await.unwrap();
         GameCache::update(ctx, interaction.user.id).await;
 
-        let result = if payout > 0 {
-            format!("Payout: {}", payout.format())
-        } else {
-            format!("Lost: {}", payout.format())
-        };
+        let result = format!("Payout: {}", payout.format());
 
         let embed = CreateEmbed::new()
             .title("Higher or Lower")

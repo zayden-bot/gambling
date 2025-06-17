@@ -83,10 +83,12 @@ impl Commands {
             (prediction.opposite(), "Coin Flip - You Lost!")
         };
 
-        let (result, colour) = if winner {
-            (format!("Payout: {}", payout.format()), Colour::DARK_GREEN)
+        let result = format!("Payout: {}", payout.format());
+
+        let colour = if winner {
+            Colour::DARK_GREEN
         } else {
-            (format!("Lost: {}", (-bet).format()), Colour::RED)
+            Colour::RED
         };
 
         let desc = format!(
