@@ -50,6 +50,7 @@ const TECH: EmojiId = EmojiId::new(1384190136060874853);
 const UTILITY: EmojiId = EmojiId::new(1384190129421418739);
 const PRODUCTION: EmojiId = EmojiId::new(1384190122320334931);
 
+const CLUBS_A: EmojiId = EmojiId::new(1383692636128284793);
 const CLUBS_2: EmojiId = EmojiId::new(1383692579710701619);
 const CLUBS_3: EmojiId = EmojiId::new(1383692586107015168);
 const CLUBS_4: EmojiId = EmojiId::new(1383692592990126091);
@@ -62,7 +63,7 @@ const CLUBS_10: EmojiId = EmojiId::new(1383692630084423781);
 const CLUBS_J: EmojiId = EmojiId::new(1383692641862156352);
 const CLUBS_Q: EmojiId = EmojiId::new(1383692653383651348);
 const CLUBS_K: EmojiId = EmojiId::new(1383692647750959247);
-const CLUBS_A: EmojiId = EmojiId::new(1383692636128284793);
+const DIAMONDS_A: EmojiId = EmojiId::new(1383692713660121199);
 const DIAMONDS_2: EmojiId = EmojiId::new(1383692659939610655);
 const DIAMONDS_3: EmojiId = EmojiId::new(1383692665585012827);
 const DIAMONDS_4: EmojiId = EmojiId::new(1383692671968743454);
@@ -75,7 +76,7 @@ const DIAMONDS_10: EmojiId = EmojiId::new(1383692708194816021);
 const DIAMONDS_J: EmojiId = EmojiId::new(1383692719045476453);
 const DIAMONDS_Q: EmojiId = EmojiId::new(1383692730626080800);
 const DIAMONDS_K: EmojiId = EmojiId::new(1383692724225572864);
-const DIAMONDS_A: EmojiId = EmojiId::new(1383692713660121199);
+const HEARTS_A: EmojiId = EmojiId::new(1383692792546725908);
 const HEARTS_2: EmojiId = EmojiId::new(1383692735789138041);
 const HEARTS_3: EmojiId = EmojiId::new(1383692742479056906);
 const HEARTS_4: EmojiId = EmojiId::new(1383692748921769984);
@@ -88,7 +89,7 @@ const HEARTS_10: EmojiId = EmojiId::new(1383692785554690099);
 const HEARTS_J: EmojiId = EmojiId::new(1383692806245056512);
 const HEARTS_Q: EmojiId = EmojiId::new(1383692825576738986);
 const HEARTS_K: EmojiId = EmojiId::new(1383692818538565642);
-const HEARTS_A: EmojiId = EmojiId::new(1383692792546725908);
+const SPADES_A: EmojiId = EmojiId::new(1383692901795500062);
 const SPADES_2: EmojiId = EmojiId::new(1383692832438485012);
 const SPADES_3: EmojiId = EmojiId::new(1383692839799754822);
 const SPADES_4: EmojiId = EmojiId::new(1383692847513079808);
@@ -101,7 +102,61 @@ const SPADES_10: EmojiId = EmojiId::new(1383692888998940732);
 const SPADES_J: EmojiId = EmojiId::new(1383692903976534016);
 const SPADES_Q: EmojiId = EmojiId::new(1383692919646584852);
 const SPADES_K: EmojiId = EmojiId::new(1383692909768871990);
-const SPADES_A: EmojiId = EmojiId::new(1383692901795500062);
+
+const CARD_DECK: [EmojiId; 52] = [
+    CLUBS_2,
+    CLUBS_3,
+    CLUBS_4,
+    CLUBS_5,
+    CLUBS_6,
+    CLUBS_7,
+    CLUBS_8,
+    CLUBS_9,
+    CLUBS_10,
+    CLUBS_J,
+    CLUBS_Q,
+    CLUBS_K,
+    CLUBS_A,
+    DIAMONDS_2,
+    DIAMONDS_3,
+    DIAMONDS_4,
+    DIAMONDS_5,
+    DIAMONDS_6,
+    DIAMONDS_7,
+    DIAMONDS_8,
+    DIAMONDS_9,
+    DIAMONDS_10,
+    DIAMONDS_J,
+    DIAMONDS_Q,
+    DIAMONDS_K,
+    DIAMONDS_A,
+    HEARTS_2,
+    HEARTS_3,
+    HEARTS_4,
+    HEARTS_5,
+    HEARTS_6,
+    HEARTS_7,
+    HEARTS_8,
+    HEARTS_9,
+    HEARTS_10,
+    HEARTS_J,
+    HEARTS_Q,
+    HEARTS_K,
+    HEARTS_A,
+    SPADES_2,
+    SPADES_3,
+    SPADES_4,
+    SPADES_5,
+    SPADES_6,
+    SPADES_7,
+    SPADES_8,
+    SPADES_9,
+    SPADES_10,
+    SPADES_J,
+    SPADES_Q,
+    SPADES_K,
+    SPADES_A,
+];
 
 const CHIP_2: EmojiId = EmojiId::new(1384310202534199406);
 const CHIP_5: EmojiId = EmojiId::new(1384310229029879898);
