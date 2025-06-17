@@ -188,18 +188,25 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
         ShopCurrency::Diamonds,
         ShopCurrency::Emeralds,
     ]
-    .into_iter()
-    .map(|item| match item {
-        ShopCurrency::Coal => (item, row.coal.format()),
-        ShopCurrency::Iron => (item, row.iron.format()),
-        ShopCurrency::Gold => (item, row.gold.format()),
-        ShopCurrency::Redstone => (item, row.redstone.format()),
-        ShopCurrency::Lapis => (item, row.lapis.format()),
-        ShopCurrency::Diamonds => (item, row.diamonds.format()),
-        ShopCurrency::Emeralds => (item, row.emeralds.format()),
-        _ => unreachable!(),
+    .chunks(2)
+    .map(|items| {
+        items.iter().map(|item| match item {
+            ShopCurrency::Coal => (item, row.coal.format()),
+            ShopCurrency::Iron => (item, row.iron.format()),
+            ShopCurrency::Gold => (item, row.gold.format()),
+            ShopCurrency::Redstone => (item, row.redstone.format()),
+            ShopCurrency::Lapis => (item, row.lapis.format()),
+            ShopCurrency::Diamonds => (item, row.diamonds.format()),
+            ShopCurrency::Emeralds => (item, row.emeralds.format()),
+            _ => unreachable!(),
+        })
     })
-    .map(|(item, owned)| format!("`{owned}` {item}"))
+    .map(|items| {
+        items
+            .map(|(item, owned)| format!("`{owned}` {item}"))
+            .collect::<Vec<_>>()
+            .join("    |    ")
+    })
     .collect::<Vec<_>>()
     .join("\n");
     desc.push_str("\n------------------\n");
@@ -219,7 +226,7 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
         })
         .map(|(item, owned)| {
             format!(
-                "**{item:?}**\nOwned: `{owned}`\n{}",
+                "{item} **{item:?}**\nOwned: `{owned}`\n{}",
                 item.craft_req()
                     .into_iter()
                     .flatten()
