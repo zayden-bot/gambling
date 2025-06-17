@@ -179,65 +179,43 @@ impl Commands {
 }
 
 async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
-    const SPACING: usize = 6;
-
-    let coal_amt = row.coal.format();
-    let gold_amt = row.gold.format();
-    let lapis_amt = row.lapis.format();
-
-    let mut desc = format!(
-        "`{}` {}{}ㅤ`{}` {}
-        `{}` {}ㅤ{}ㅤ`{}` {}
-        `{}` {}ㅤ{}ㅤ`{}` {}
-        `{}` {}",
-        coal_amt,
-        ShopCurrency::Coal,
-        "ㅤ".repeat(SPACING - coal_amt.len()),
-        row.iron.format(),
-        ShopCurrency::Iron,
-        gold_amt,
-        ShopCurrency::Gold,
-        "ㅤ".repeat(SPACING - gold_amt.len()),
-        row.redstone.format(),
-        ShopCurrency::Redstone,
-        lapis_amt,
-        ShopCurrency::Lapis,
-        "ㅤ".repeat(SPACING - lapis_amt.len()),
-        row.diamonds.format(),
-        ShopCurrency::Diamonds,
-        row.emeralds.format(),
-        ShopCurrency::Emeralds
-    );
-
-    desc.push('\n');
-
-    desc.push_str(
-        &[
-            ShopCurrency::Tech,
-            ShopCurrency::Utility,
-            ShopCurrency::Production,
-        ]
-        .into_iter()
-        .map(|item| match item {
-            ShopCurrency::Tech => (item, row.tech.format()),
-            ShopCurrency::Utility => (item, row.utility.format()),
-            ShopCurrency::Production => (item, row.production.format()),
-            _ => unreachable!(),
-        })
-        .map(|(item, owned)| {
-            format!(
-                "{item} **{item:?}**\nOwned: `{owned}`\n{}",
-                item.craft_req()
-                    .into_iter()
-                    .flatten()
-                    .map(|(currency, cost)| format!("`{cost}` {currency}"))
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n\n"),
-    );
+    let mut desc = [
+        ShopCurrency::Tech,
+        ShopCurrency::Utility,
+        ShopCurrency::Production,
+    ]
+    .into_iter()
+    .map(|item| match item {
+        ShopCurrency::Tech => (item, row.tech.format()),
+        ShopCurrency::Utility => (item, row.utility.format()),
+        ShopCurrency::Production => (item, row.production.format()),
+        _ => unreachable!(),
+    })
+    .map(|(item, owned)| {
+        format!(
+            "{item} **{item:?}**\nOwned: `{owned}`\n{}",
+            item.craft_req()
+                .into_iter()
+                .flatten()
+                .map(|(currency, cost)| {
+                    match currency {
+                        ShopCurrency::Coal => (currency, cost, row.coal.format()),
+                        ShopCurrency::Iron => (currency, cost, row.iron.format()),
+                        ShopCurrency::Gold => (currency, cost, row.gold.format()),
+                        ShopCurrency::Redstone => (currency, cost, row.redstone.format()),
+                        ShopCurrency::Lapis => (currency, cost, row.lapis.format()),
+                        ShopCurrency::Diamonds => (currency, cost, row.diamonds.format()),
+                        ShopCurrency::Emeralds => (currency, cost, row.emeralds.format()),
+                        _ => unreachable!("Invalid shop currency"),
+                    }
+                })
+                .map(|(currency, cost, owned)| format!("`{cost}` {currency} | Owned: {owned}"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    })
+    .collect::<Vec<_>>()
+    .join("\n\n");
 
     desc.push_str("\n------------------\n`/craft <id> <amount>`");
 
