@@ -180,9 +180,9 @@ impl Commands {
 
 async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
     let mut desc = format!(
-        "`{}` {}        `{}` {}
-        `{}` {}         `{}` {}
-        `{}` {}         `{}` {}
+        "`{}` {}ㅤ          ㅤ`{}` {}
+        `{}` {}ㅤ          ㅤ`{}` {}
+        `{}` {}ㅤ          ㅤ`{}` {}
         `{}` {}",
         row.coal.format(),
         ShopCurrency::Coal,
@@ -199,6 +199,8 @@ async fn menu(ctx: &Context, interaction: &CommandInteraction, row: CraftRow) {
         row.emeralds.format(),
         ShopCurrency::Emeralds
     );
+
+    desc.push('\n');
 
     desc.push_str(
         &[
