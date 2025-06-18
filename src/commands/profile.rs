@@ -114,7 +114,7 @@ impl From<ProfileRow> for CreateEmbed {
         };
 
         CreateEmbed::new()
-            .field(format!("Cash <:coin:{COIN}>"), value.coins_str(), false)
+            .field(format!("Coins <:coin:{COIN}>"), value.coins_str(), false)
             .field("Gems 💎", value.gems_str(), false)
             .field(
                 format!("Level {}", LevelsRow::level(&value).format()),
