@@ -386,7 +386,7 @@ const PAYOUT_X50: ShopItem = ShopItem::new(
     "Payout x50",
     Emoji::Id(CHIP_50),
     "Fifty times payout from winning | Duration: `+2 minute`",
-    25,
+    20,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
@@ -405,7 +405,7 @@ const PAYOUT_X100: ShopItem = ShopItem::new(
     "Payout x100",
     Emoji::Id(CHIP_100),
     "One hundered times payout from winning | Duration: `+1 minute`",
-    50,
+    25,
     ShopCurrency::Gems,
     ShopPage::Boost2,
 )
