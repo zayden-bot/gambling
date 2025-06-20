@@ -181,7 +181,7 @@ impl Commands {
         let num_attempts = (row.miners.unwrap_or_default() as f64 * prestige_multiplier) as u64;
 
         for (&resource, chance) in CHANCES.iter() {
-            let ore = Binomial::new(num_attempts, chance * 75.0)
+            let ore = Binomial::new(num_attempts, chance * 50.0)
                 .unwrap()
                 .sample(&mut rng()) as i64;
 
