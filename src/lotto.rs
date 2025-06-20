@@ -115,8 +115,9 @@ impl Lotto {
                 Manager::add_coins(&mut *tx, winner, payout).await.unwrap();
 
                 let line = format!(
-                    "{} has won {} <:coin:{COIN}> from the lottery!",
+                    "{} ({}) has won {} <:coin:{COIN}> from the lottery!",
                     winner.mention(),
+                    winner.to_user(&ctx).await.unwrap().display_name(),
                     payout.format()
                 );
 
