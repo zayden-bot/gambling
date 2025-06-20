@@ -14,6 +14,7 @@ pub mod lotto;
 pub mod models;
 pub mod shop;
 pub mod stamina;
+pub mod utils;
 
 pub use commands::Commands;
 pub use commands::goals::GoalsManager;

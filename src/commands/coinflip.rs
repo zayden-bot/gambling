@@ -2,13 +2,14 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use serenity::all::{
-    Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
+    CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
+    EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
 use sqlx::{Database, Pool};
-use zayden_core::{FormatNum, parse_options};
+use zayden_core::parse_options;
 
 use crate::events::{Dispatch, Event, GameEvent};
+use crate::utils::{Emoji, GameResult, game_embed};
 use crate::{
     COIN, Coins, EffectsManager, GameCache, GameManager, GameRow, GoalsManager, Result, TAILS,
     VerifyBet,
@@ -83,26 +84,15 @@ impl Commands {
             (prediction.opposite(), "Coin Flip - You Lost!")
         };
 
-        let result = format!("Payout: {}", payout.format());
-
-        let colour = if winner {
-            Colour::DARK_GREEN
-        } else {
-            Colour::RED
-        };
-
-        let desc = format!(
-            "Your bet: {} <:coin:{COIN}>\n\n**You bet on:** {} ({prediction})\n**Coin landed on:** {} ({coin})\n\n{result}\nYour coins: {}",
-            bet.format(),
-            prediction.as_emoji(),
-            coin.as_emoji(),
-            coins.format()
+        let embed = game_embed(
+            title,
+            prediction,
+            "Coin landed on",
+            coin,
+            bet,
+            payout,
+            coins,
         );
-
-        let embed = CreateEmbed::new()
-            .title(title)
-            .description(desc)
-            .colour(colour);
 
         interaction
             .edit_response(ctx, EditInteractionResponse::new().embed(embed))
@@ -145,13 +135,6 @@ impl CoinSide {
             CoinSide::Tails => CoinSide::Heads,
         }
     }
-
-    fn as_emoji(&self) -> String {
-        match self {
-            CoinSide::Heads => format!("<:heads:{COIN}>"),
-            CoinSide::Tails => format!("<:tails:{TAILS}>"),
-        }
-    }
 }
 
 impl Display for CoinSide {
@@ -171,6 +154,20 @@ impl FromStr for CoinSide {
             "heads" => Ok(CoinSide::Heads),
             "tails" => Ok(CoinSide::Tails),
             _ => Err(()),
+        }
+    }
+}
+
+impl From<CoinSide> for GameResult<'_> {
+    fn from(value: CoinSide) -> Self {
+        let emoji = match value {
+            CoinSide::Heads => Emoji::Id(COIN),
+            CoinSide::Tails => Emoji::Id(TAILS),
+        };
+
+        Self {
+            name: value.to_string(),
+            emoji,
         }
     }
 }

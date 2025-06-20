@@ -3,8 +3,7 @@ use std::ops::Deref;
 use std::str::FromStr;
 use std::time::Duration;
 
-use serenity::all::EmojiId;
-
+use crate::utils::Emoji;
 use crate::{
     CHIP_2, CHIP_5, CHIP_10, CHIP_50, CHIP_100, COAL, COIN, DIAMOND, EMERALD, GOLD, GamblingItem,
     IRON, LAPIS, PRODUCTION, REDSTONE, TECH, UTILITY,
@@ -146,13 +145,6 @@ impl FromStr for ShopPage {
             _ => Err(()),
         }
     }
-}
-
-#[derive(Clone, Copy)]
-pub enum Emoji<'a> {
-    Str(&'a str),
-    Id(EmojiId),
-    None,
 }
 
 #[derive(Clone, Copy)]

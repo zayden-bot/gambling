@@ -1,14 +1,14 @@
 use serenity::all::{
-    Colour, CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
-    CreateEmbed, EditInteractionResponse, ResolvedOption, ResolvedValue,
+    CommandInteraction, CommandOptionType, Context, CreateCommand, CreateCommandOption,
+    EditInteractionResponse, ResolvedOption, ResolvedValue,
 };
 use sqlx::{Database, Pool};
-use zayden_core::{FormatNum, parse_options};
+use zayden_core::parse_options;
 
 use crate::events::{Dispatch, Event, GameEvent};
+use crate::utils::{GameResult, game_embed};
 use crate::{
-    COIN, Coins, EffectsManager, Error, GameCache, GameManager, GameRow, GoalsManager, Result,
-    VerifyBet,
+    Coins, EffectsManager, Error, GameCache, GameManager, GameRow, GoalsManager, Result, VerifyBet,
 };
 
 use super::Commands;
@@ -57,16 +57,10 @@ impl Commands {
 
         let roll = rand::random_range(1..=n_sides);
 
-        let result = "Payout:";
-
-        let (title, mut payout, colour) = if roll == prediction {
-            (
-                "🎲 Dice Roll 🎲 - You Won!",
-                bet * n_sides,
-                Colour::DARK_GREEN,
-            )
+        let (title, mut payout) = if roll == prediction {
+            ("🎲 Dice Roll 🎲 - You Won!", bet * n_sides)
         } else {
-            ("🎲 Dice Roll 🎲 - You Lost!", 0, Colour::RED)
+            ("🎲 Dice Roll 🎲 - You Lost!", 0)
         };
 
         Dispatch::<Db, GoalHandler>::new(pool)
@@ -86,17 +80,15 @@ impl Commands {
         GameHandler::save(pool, row).await.unwrap();
         GameCache::update(ctx, interaction.user.id).await;
 
-        let desc = format!(
-            "Your bet: {} <:coin:{COIN}>\n\n**You picked:** {prediction} 🎲\n**Result:** {roll} 🎲\n\n{result} {}\nYour coins: {}",
-            bet.format(),
-            payout.format(),
-            coins.format()
+        let embed = game_embed(
+            title,
+            GameResult::new_with_str(prediction.to_string(), "🎲"),
+            "Result",
+            GameResult::new_with_str(roll.to_string(), "🎲"),
+            bet,
+            payout,
+            coins,
         );
-
-        let embed = CreateEmbed::new()
-            .title(title)
-            .description(desc)
-            .colour(colour);
 
         interaction
             .edit_response(ctx, EditInteractionResponse::new().embed(embed))
