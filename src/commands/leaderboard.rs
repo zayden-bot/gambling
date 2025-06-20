@@ -62,11 +62,7 @@ pub trait LeaderboardManager<Db: Database> {
         id: impl Into<UserId> + Send,
     ) -> sqlx::Result<Option<i64>>;
 
-    async fn lottotickets(
-        pool: &Pool<Db>,
-        users: &[i64],
-        page_num: i64,
-    ) -> sqlx::Result<Vec<LeaderboardRow>>;
+    async fn lottotickets(pool: &Pool<Db>, page_num: i64) -> sqlx::Result<Vec<LeaderboardRow>>;
 
     async fn lottotickets_row_number(
         pool: &Pool<Db>,
@@ -348,7 +344,7 @@ async fn get_rows<Db: Database, Manager: LeaderboardManager<Db>>(
         "coins" => Manager::coins(pool, users, page_num).await.unwrap(),
         "gems" => Manager::gems(pool, users, page_num).await.unwrap(),
         "eggplants" => Manager::eggplants(pool, users, page_num).await.unwrap(),
-        "lottotickets" => Manager::lottotickets(pool, users, page_num).await.unwrap(),
+        "lottotickets" => Manager::lottotickets(pool, page_num).await.unwrap(),
         _ => unreachable!("Invalid leaderboard option"),
     }
 }
