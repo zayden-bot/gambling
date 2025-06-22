@@ -99,6 +99,11 @@ impl MaxBet for ProfileRow {
 
 impl From<ProfileRow> for CreateEmbed {
     fn from(value: ProfileRow) -> Self {
+        let mut betting_max = value.max_bet_str();
+        if value.prestige() != 0 {
+            betting_max.push_str(&format!("\n(Prestige Boost: +{}%)", 10 * value.prestige()));
+        }
+
         let inventory = value.inventory();
 
         let loot_str = if inventory.is_empty() {
@@ -125,15 +130,7 @@ impl From<ProfileRow> for CreateEmbed {
                 ),
                 false,
             )
-            .field(
-                "Betting Maximum",
-                format!(
-                    "{}\n(Prestige Boost: +{}%)",
-                    value.max_bet_str(),
-                    10 * value.prestige()
-                ),
-                false,
-            )
+            .field("Betting Maximum", betting_max, false)
             .field("Loot", loot_str, false)
             .colour(Colour::TEAL)
     }
