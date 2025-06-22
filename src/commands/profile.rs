@@ -125,7 +125,15 @@ impl From<ProfileRow> for CreateEmbed {
                 ),
                 false,
             )
-            .field("Betting Maximum", value.max_bet_str(), false)
+            .field(
+                "Betting Maximum",
+                format!(
+                    "{}\n(Prestige Boost: +{}%)",
+                    value.max_bet_str(),
+                    10 * value.prestige()
+                ),
+                false,
+            )
             .field("Loot", loot_str, false)
             .colour(Colour::TEAL)
     }
