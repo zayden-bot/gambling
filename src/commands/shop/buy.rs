@@ -245,8 +245,12 @@ pub async fn buy<Db: Database, GoalsHandler: GoalsManager<Db>, BuyHandler: ShopM
 
     let costs = costs
         .into_iter()
-        .map(|(cost, currency)| (cost * amount, currency))
-        .collect::<Vec<_>>();
+        .map(|(cost, currency)| {
+            cost.checked_mul(amount)
+                .map(|new_cost| (new_cost, currency))
+                .ok_or_else(|| Error::Overflow(i64::MAX / cost))
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     for (cost, currency) in costs.iter().copied() {
         let funds = match currency {

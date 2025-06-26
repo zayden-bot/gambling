@@ -7,6 +7,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
+    Overflow(i64),
     MessageConflict,
 
     PremiumRequired,
@@ -37,6 +38,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
+            Error::Overflow(max) => write!(f, "Please enter a maximum of {max}"),
             Error::MessageConflict => ZaydenError::MessageConflict.fmt(f),
             Error::PremiumRequired => write!(f, "Sorry, only supporters can use this option"),
             Error::InsufficientFunds { required, currency } => write!(
