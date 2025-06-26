@@ -59,8 +59,9 @@ pub struct PrestigeRow {
 
 impl PrestigeRow {
     pub fn prestige(&mut self) {
+        self.prestige += 1;
         self.coins = START_AMOUNT;
-        self.gems += 1;
+        self.gems += self.prestige;
         self.stamina = 3;
         self.inventory
             .as_mut()
@@ -81,7 +82,6 @@ impl PrestigeRow {
         self.solar_systems = 0;
         self.galaxies = 0;
         self.universes = 0;
-        self.prestige += 1;
         self.coal = 0;
         self.iron = 0;
         self.gold = 0;
@@ -175,8 +175,6 @@ impl Commands {
                     .unwrap_or_else(|| todo!());
 
                 row.prestige();
-
-                println!("New Inv: {:?}", row.inventory);
 
                 Manager::save(pool, row).await.unwrap();
 
