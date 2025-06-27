@@ -82,7 +82,7 @@ const WIN_10: GoalDefinition = GoalDefinition::new("gift")
             return false;
         };
 
-        if event.payout <= 0 {
+        if !event.win {
             return false;
         }
 
@@ -102,7 +102,7 @@ const HIGHERLOWER: GoalDefinition = GoalDefinition::new("higherlower")
             return false;
         }
 
-        goal.progress = event.payout / 1000;
+        goal.progress = event.bet / 1000;
         goal.progress = goal.progress.min(goal.target);
         true
     });
@@ -115,11 +115,11 @@ const WIN_MAX_BET: GoalDefinition = GoalDefinition::new("winmaxbet")
             return false;
         };
 
-        if event.payout <= 0 {
+        if !event.win {
             return false;
         }
 
-        goal.update_progress(event.payout);
+        goal.update_progress(event.bet);
         true
     });
 
@@ -131,7 +131,7 @@ const WIN_3_ROW: GoalDefinition = GoalDefinition::new("win3row")
             return false;
         };
 
-        if event.payout <= 0 {
+        if !event.win {
             goal.reset_progress();
             return false;
         }
@@ -148,7 +148,7 @@ const ALL_IN: GoalDefinition = GoalDefinition::new("allin")
             return false;
         };
 
-        goal.update_progress(event.payout.abs());
+        goal.update_progress(event.bet);
         goal.is_complete()
     });
 

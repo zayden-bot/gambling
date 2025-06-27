@@ -30,15 +30,17 @@ impl Event {
 pub struct GameEvent {
     pub game_id: String,
     pub user_id: UserId,
-    pub payout: i64,
+    pub bet: i64,
+    pub win: bool,
 }
 
 impl GameEvent {
-    pub fn new(id: impl Into<String>, user_id: impl Into<UserId>, payout: i64) -> Self {
+    pub fn new(id: impl Into<String>, user_id: impl Into<UserId>, bet: i64, win: bool) -> Self {
         Self {
             game_id: id.into(),
             user_id: user_id.into(),
-            payout,
+            bet,
+            win,
         }
     }
 }

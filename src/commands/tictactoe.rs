@@ -138,14 +138,14 @@ impl Commands {
         dispatch
             .fire(
                 &mut p1_row,
-                Event::Game(GameEvent::new("rps", p1, state.bet)),
+                Event::Game(GameEvent::new("rps", p1, state.bet, false)), // TODO: Fix win logic
             )
             .await?;
 
         dispatch
             .fire(
                 &mut p2_row,
-                Event::Game(GameEvent::new("rps", p2, state.bet)),
+                Event::Game(GameEvent::new("rps", p2, state.bet, false)), // TODO: Fix win logic
             )
             .await?;
 

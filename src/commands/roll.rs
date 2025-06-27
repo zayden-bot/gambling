@@ -66,7 +66,12 @@ impl Commands {
         Dispatch::<Db, GoalHandler>::new(pool)
             .fire(
                 &mut row,
-                Event::Game(GameEvent::new("roll", interaction.user.id, bet)),
+                Event::Game(GameEvent::new(
+                    "roll",
+                    interaction.user.id,
+                    bet,
+                    roll == prediction,
+                )),
             )
             .await?;
 

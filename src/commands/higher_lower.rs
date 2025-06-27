@@ -180,6 +180,7 @@ impl Commands {
                     "higherorlower",
                     interaction.user.id,
                     payout + BUYIN,
+                    payout > 0,
                 )),
             )
             .await?;
