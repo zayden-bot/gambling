@@ -286,9 +286,9 @@ pub trait MaxBet {
 
     fn max_bet(&self) -> i64 {
         let base_amount = (self.level() * 10_000).max(10_000);
-        let prestige_multiplier = 1.0 + 0.1 * self.prestige() as f64;
+        let prestige_bonus = 10 + self.prestige();
 
-        (base_amount as f64 * prestige_multiplier).round() as i64
+        (base_amount as i64 * prestige_bonus) / 10
     }
 
     fn max_bet_str(&self) -> String {
