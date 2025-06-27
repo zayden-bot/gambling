@@ -9,7 +9,7 @@ use serenity::all::{
 use sqlx::any::AnyQueryResult;
 use sqlx::types::Json;
 use sqlx::{Database, FromRow, Pool};
-use zayden_core::{ActiveMessages, FormatNum};
+use zayden_core::FormatNum;
 
 use crate::shop::LOTTO_TICKET;
 use crate::{Commands, GamblingItem, Result, SHOP_ITEMS, START_AMOUNT};
@@ -125,13 +125,6 @@ impl Commands {
             return Ok(());
         }
 
-        {
-            let data = ctx.data.read().await;
-            if let Some(data) = data.get::<ActiveMessages>() {
-                data.check("prestige", interaction.user.id)?;
-            }
-        };
-
         let embed = CreateEmbed::new().description("Are you sure you want to prestige your mine?\n\nPrestiging will **reset your mine, coins, items and resources**, but you'll unlock powerful upgrades!").colour(Colour::TEAL);
 
         let confirm = CreateButton::new("confirm")
@@ -154,13 +147,6 @@ impl Commands {
             .await
             .unwrap();
 
-        {
-            let mut data = ctx.data.write().await;
-            data.entry::<ActiveMessages>()
-                .or_insert(ActiveMessages::default())
-                .insert("prestige", interaction.user.id);
-        }
-
         let mut stream = msg
             .await_component_interactions(ctx)
             .author_id(interaction.user.id)
@@ -173,6 +159,10 @@ impl Commands {
                     .await
                     .unwrap()
                     .unwrap_or_else(|| todo!());
+
+                if row.miners < MINERS {
+                    return Ok(());
+                }
 
                 row.prestige();
 
@@ -191,13 +181,6 @@ impl Commands {
                     .await
                     .unwrap();
 
-                {
-                    let mut data = ctx.data.write().await;
-                    data.entry::<ActiveMessages>()
-                        .or_insert(ActiveMessages::default())
-                        .remove("prestige", interaction.user.id);
-                }
-
                 return Ok(());
             }
 
@@ -208,13 +191,6 @@ impl Commands {
         }
 
         msg.delete(ctx).await.unwrap();
-
-        {
-            let mut data = ctx.data.write().await;
-            data.entry::<ActiveMessages>()
-                .or_insert(ActiveMessages::default())
-                .remove("prestige", interaction.user.id);
-        }
 
         Ok(())
     }
