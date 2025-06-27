@@ -28,7 +28,7 @@ pub struct GoalsRow {
     pub coins: i64,
     pub gems: i64,
     pub level: Option<i32>,
-    pub prestige: i64,
+    pub prestige: Option<i64>,
 }
 
 impl Coins for GoalsRow {
@@ -53,7 +53,7 @@ impl Gems for GoalsRow {
 
 impl MaxBet for GoalsRow {
     fn prestige(&self) -> i64 {
-        self.prestige
+        self.prestige.unwrap_or_default()
     }
 
     fn level(&self) -> i32 {
