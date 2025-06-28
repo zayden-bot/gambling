@@ -264,7 +264,10 @@ impl Commands {
                     if mine_amount == 0 {
                         String::new()
                     } else {
-                        format!("\n\nWhile you were away, your mine generated:\n<:coin:{COIN}> {} coins", mine_amount.format())
+                        format!(
+                            "\n\nWhile you were gone, your mine made:\n<:coin:{COIN}> `{}` coins",
+                            mine_amount.format()
+                        )
                     }
                 }
             ))
