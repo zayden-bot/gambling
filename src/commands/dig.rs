@@ -264,7 +264,7 @@ impl Commands {
                     if mine_amount == 0 {
                         String::new()
                     } else {
-                        format!("\n<:coin:{COIN}> {} collected", mine_amount.format())
+                        format!("\n\nWhile you were away, your mine generated:\n<:coin:{COIN}> {} coins", mine_amount.format())
                     }
                 }
             ))
