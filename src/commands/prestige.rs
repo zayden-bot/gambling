@@ -12,9 +12,7 @@ use sqlx::{Database, FromRow, Pool};
 use zayden_core::FormatNum;
 
 use crate::shop::LOTTO_TICKET;
-use crate::{Commands, GamblingItem, Result, SHOP_ITEMS, START_AMOUNT};
-
-const MINERS: i64 = 938_810;
+use crate::{Commands, GamblingItem, Mining, Result, SHOP_ITEMS, START_AMOUNT};
 
 #[async_trait]
 pub trait PrestigeManager<Db: Database> {
@@ -58,7 +56,21 @@ pub struct PrestigeRow {
 }
 
 impl PrestigeRow {
-    pub fn prestige(&mut self) {
+    pub fn req_miners(&self) -> i64 {
+        let max_values = self.max_values();
+
+        if self.prestige() > 10 {
+            todo!()
+        } else {
+            2 * max_values.get("continent").unwrap()
+                * max_values.get("country").unwrap()
+                * max_values.get("land").unwrap()
+                * max_values.get("mine").unwrap()
+                * max_values.get("miner").unwrap()
+        }
+    }
+
+    pub fn do_prestige(&mut self) {
         self.prestige += 1;
         self.coins = START_AMOUNT;
         self.gems += self.prestige;
@@ -95,6 +107,88 @@ impl PrestigeRow {
     }
 }
 
+impl Mining for PrestigeRow {
+    fn miners(&self) -> i64 {
+        self.miners
+    }
+
+    fn mines(&self) -> i64 {
+        self.mines
+    }
+
+    fn land(&self) -> i64 {
+        self.land
+    }
+
+    fn countries(&self) -> i64 {
+        self.countries
+    }
+
+    fn continents(&self) -> i64 {
+        self.continents
+    }
+
+    fn planets(&self) -> i64 {
+        self.planets
+    }
+
+    fn solar_systems(&self) -> i64 {
+        self.solar_systems
+    }
+
+    fn galaxies(&self) -> i64 {
+        self.galaxies
+    }
+
+    fn universes(&self) -> i64 {
+        self.universes
+    }
+
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
+
+    fn tech(&self) -> i64 {
+        self.tech
+    }
+
+    fn utility(&self) -> i64 {
+        self.utility
+    }
+
+    fn production(&self) -> i64 {
+        todo!()
+    }
+
+    fn coal(&self) -> i64 {
+        todo!()
+    }
+
+    fn iron(&self) -> i64 {
+        todo!()
+    }
+
+    fn gold(&self) -> i64 {
+        todo!()
+    }
+
+    fn redstone(&self) -> i64 {
+        todo!()
+    }
+
+    fn lapis(&self) -> i64 {
+        todo!()
+    }
+
+    fn diamonds(&self) -> i64 {
+        todo!()
+    }
+
+    fn emeralds(&self) -> i64 {
+        todo!()
+    }
+}
+
 impl Commands {
     pub async fn prestige<Db: Database, Manager: PrestigeManager<Db>>(
         ctx: &Context,
@@ -103,17 +197,19 @@ impl Commands {
     ) -> Result<()> {
         interaction.defer(ctx).await?;
 
-        let miners = Manager::miners(pool, interaction.user.id)
+        let row = Manager::row(pool, interaction.user.id)
             .await
             .unwrap()
             .unwrap_or_default();
 
-        if miners < MINERS {
+        let req_miners = row.req_miners();
+
+        if row.miners() < req_miners {
             let embed = CreateEmbed::new()
                 .description(format!(
                     "❌ You need at least `{}` miners before you can prestige.\nYou only have `{}`",
-                    MINERS.format(),
-                    miners.format()
+                    req_miners.format(),
+                    row.miners().format()
                 ))
                 .colour(Colour::RED);
 
@@ -158,13 +254,13 @@ impl Commands {
                 let mut row = Manager::row(pool, interaction.user.id)
                     .await
                     .unwrap()
-                    .unwrap_or_else(|| todo!());
+                    .unwrap();
 
-                if row.miners < MINERS {
+                if row.miners < row.req_miners() {
                     return Ok(());
                 }
 
-                row.prestige();
+                row.do_prestige();
 
                 Manager::save(pool, row).await.unwrap();
 
