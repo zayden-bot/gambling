@@ -147,12 +147,12 @@ pub trait Mining {
     fn max_values(&self) -> HashMap<&str, i64> {
         const MAX_MINERS_PER_MINE: u8 = 10;
         const MAX_MINES_PER_LAND: u8 = 5;
-        const MAX_LAND_PER_COUNTRY: u8 = 25;
-        const MAX_COUNTRIES_PER_CONTINENT: u8 = 50;
+        const MAX_LAND_PER_COUNTRY: u8 = 15;
+        const MAX_COUNTRIES_PER_CONTINENT: u8 = 25;
         const MAX_CONTINENTS_PER_PLANT: u8 = 7;
         const MAX_PLANTS_PER_SOLAR_SYSTEM: u8 = 8;
-        const MAX_SOLAR_SYSTEM_PER_GALAXIES: u8 = 100;
-        const MAX_GALAXIES_PER_UNIVERSE: u8 = u8::MAX;
+        const MAX_SOLAR_SYSTEM_PER_GALAXIES: u8 = 50;
+        const MAX_GALAXIES_PER_UNIVERSE: u8 = 100;
 
         HashMap::from([
             ("miner", MAX_MINERS_PER_MINE as i64 * (self.mines() + 1)),
