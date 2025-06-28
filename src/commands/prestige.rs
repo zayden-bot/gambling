@@ -60,7 +60,8 @@ impl PrestigeRow {
         if self.prestige() > 10 {
             todo!()
         } else {
-            2 * Self::continents_per_plant()
+            Self::plants_per_solar_system()
+                * Self::continents_per_plant()
                 * Self::countries_per_continent()
                 * Self::land_per_country()
                 * Self::mines_per_land()
