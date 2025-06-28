@@ -224,11 +224,13 @@ impl Commands {
             .fire(&mut row, Event::Work(interaction.user.id))
             .await?;
 
+        let mine_amount = row.mine_amount();
+        *row.coins_mut() += mine_amount;
+
         row.done_work();
+        row.mine_activity = Some(Utc::now().naive_utc());
 
         let stamina = row.stamina_str();
-
-        let mine_amount = row.mine_amount();
 
         DigHandler::save(pool, row).await.unwrap();
 
