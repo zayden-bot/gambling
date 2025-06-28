@@ -2,6 +2,8 @@ use async_trait::async_trait;
 use serenity::all::UserId;
 use sqlx::{Database, FromRow, Pool, any::AnyQueryResult};
 
+use crate::Prestige;
+
 use super::{Coins, Gems, MaxBet};
 
 #[async_trait]
@@ -54,12 +56,14 @@ impl Gems for GameRow {
     }
 }
 
+impl Prestige for GameRow {
+    fn prestige(&self) -> i64 {
+        self.prestige.unwrap_or_default()
+    }
+}
+
 impl MaxBet for GameRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
-    }
-
-    fn prestige(&self) -> i64 {
-        self.prestige.unwrap_or_default()
     }
 }

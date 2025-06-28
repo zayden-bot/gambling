@@ -8,7 +8,7 @@ use serenity::all::{
 use sqlx::{Database, Pool, types::Json};
 use zayden_core::FormatNum;
 
-use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, MaxBet, Result, ShopItem};
+use crate::{COIN, Coins, GamblingItem, Gems, ItemInventory, MaxBet, Prestige, Result, ShopItem};
 
 use super::Commands;
 
@@ -87,11 +87,13 @@ impl LevelsRow for ProfileRow {
     }
 }
 
-impl MaxBet for ProfileRow {
+impl Prestige for ProfileRow {
     fn prestige(&self) -> i64 {
         self.prestige.unwrap_or_default()
     }
+}
 
+impl MaxBet for ProfileRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }

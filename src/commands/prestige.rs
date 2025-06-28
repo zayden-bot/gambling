@@ -12,7 +12,9 @@ use sqlx::{Database, FromRow, Pool};
 use zayden_core::FormatNum;
 
 use crate::shop::LOTTO_TICKET;
-use crate::{Commands, GamblingItem, Mining, Result, SHOP_ITEMS, START_AMOUNT};
+use crate::{
+    Commands, GamblingItem, MaxValues, Mining, Prestige, Result, SHOP_ITEMS, START_AMOUNT,
+};
 
 #[async_trait]
 pub trait PrestigeManager<Db: Database> {
@@ -142,10 +144,6 @@ impl Mining for PrestigeRow {
         self.universes
     }
 
-    fn prestige(&self) -> i64 {
-        self.prestige
-    }
-
     fn tech(&self) -> i64 {
         self.tech
     }
@@ -184,6 +182,12 @@ impl Mining for PrestigeRow {
 
     fn emeralds(&self) -> i64 {
         todo!()
+    }
+}
+
+impl Prestige for PrestigeRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
     }
 }
 

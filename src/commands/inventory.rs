@@ -144,10 +144,6 @@ impl Mining for InventoryRow {
         unimplemented!()
     }
 
-    fn prestige(&self) -> i64 {
-        unimplemented!()
-    }
-
     fn tech(&self) -> i64 {
         self.tech
     }

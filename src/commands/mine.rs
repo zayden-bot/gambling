@@ -5,7 +5,7 @@ use serenity::all::{
 use sqlx::{Database, FromRow, Pool};
 use zayden_core::FormatNum;
 
-use crate::{COIN, MineHourly, Mining, Result};
+use crate::{COIN, MaxValues, MineHourly, Mining, Prestige, Result};
 
 #[async_trait]
 pub trait MineManager<Db: Database> {
@@ -63,10 +63,6 @@ impl Mining for MineRow {
         self.universes
     }
 
-    fn prestige(&self) -> i64 {
-        self.prestige
-    }
-
     fn tech(&self) -> i64 {
         unimplemented!()
     }
@@ -108,13 +104,15 @@ impl Mining for MineRow {
     }
 }
 
+impl Prestige for MineRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
+}
+
 impl MineHourly for MineRow {
     fn miners(&self) -> i64 {
         self.miners
-    }
-
-    fn prestige(&self) -> i64 {
-        self.prestige
     }
 }
 

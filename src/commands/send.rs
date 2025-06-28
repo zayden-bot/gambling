@@ -9,8 +9,8 @@ use zayden_core::{FormatNum, parse_options};
 
 use crate::events::{Dispatch, Event, SendEvent};
 use crate::{
-    COIN, Coins, Commands, Error, Gems, GoalsManager, MaxBet, Result, ShopCurrency, Stamina,
-    StaminaManager,
+    COIN, Coins, Commands, Error, Gems, GoalsManager, MaxBet, Prestige, Result, ShopCurrency,
+    Stamina, StaminaManager,
 };
 
 pub struct SendRow {
@@ -58,10 +58,6 @@ impl Gems for SendRow {
 }
 
 impl MaxBet for SendRow {
-    fn prestige(&self) -> i64 {
-        self.prestige
-    }
-
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
@@ -74,6 +70,12 @@ impl Stamina for SendRow {
 
     fn stamina_mut(&mut self) -> &mut i32 {
         &mut self.stamina
+    }
+}
+
+impl Prestige for SendRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
     }
 }
 

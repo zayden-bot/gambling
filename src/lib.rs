@@ -25,7 +25,7 @@ pub use goals::GoalHandler;
 pub use lotto::{Lotto, LottoManager, LottoRow, jackpot};
 pub use models::{
     Coins, EffectsManager, EffectsRow, GamblingGoalsRow, GamblingItem, GameManager, GameRow, Gems,
-    ItemInventory, MaxBet, MineHourly, Mining, Stamina, VerifyBet,
+    ItemInventory, MaxBet, MaxValues, MineHourly, Mining, Prestige, Stamina, VerifyBet,
 };
 pub use shop::{SHOP_ITEMS, ShopCurrency, ShopItem, ShopPage};
 pub use stamina::{StaminaCron, StaminaManager};

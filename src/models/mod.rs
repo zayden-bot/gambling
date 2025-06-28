@@ -5,6 +5,7 @@ mod gambling_goals;
 mod gambling_item;
 mod game_row;
 
+use chrono::{NaiveDateTime, Timelike, Utc};
 pub use gambling_effects::{EffectsManager, EffectsRow};
 pub use gambling_goals::GamblingGoalsRow;
 pub use gambling_item::GamblingItem;
@@ -122,8 +123,6 @@ pub trait Mining {
 
     fn universes(&self) -> i64;
 
-    fn prestige(&self) -> i64;
-
     fn tech(&self) -> i64;
 
     fn utility(&self) -> i64;
@@ -144,6 +143,60 @@ pub trait Mining {
 
     fn emeralds(&self) -> i64;
 
+    fn resources(&self) -> String {
+        format!(
+            "{} `{}` coal
+        {} `{}` iron
+        {} `{}` gold
+        {} `{}` redstone
+        {} `{}` lapis
+        {} `{}` diamonds
+        {} `{}` emeralds",
+            ShopCurrency::Coal,
+            self.coal().format(),
+            ShopCurrency::Iron,
+            self.iron().format(),
+            ShopCurrency::Gold,
+            self.gold().format(),
+            ShopCurrency::Redstone,
+            self.redstone().format(),
+            ShopCurrency::Lapis,
+            self.lapis().format(),
+            ShopCurrency::Diamonds,
+            self.diamonds().format(),
+            ShopCurrency::Emeralds,
+            self.emeralds().format(),
+        )
+    }
+
+    fn crafted(&self) -> String {
+        format!(
+            "{} `{}` tech packs
+            {} `{}` utility packs
+            {} `{}` production packs",
+            ShopCurrency::Tech,
+            self.tech().format(),
+            ShopCurrency::Utility,
+            self.utility().format(),
+            ShopCurrency::Production,
+            self.production().format()
+        )
+    }
+}
+
+pub trait Prestige {
+    fn prestige(&self) -> i64;
+
+    fn prestige_mult_100(&self) -> i64 {
+        100 + self.prestige()
+    }
+
+    fn prestige_mult_10(&self) -> i64 {
+        10 + self.prestige()
+    }
+}
+
+pub trait MaxValues: Mining + Prestige {
     #[inline(always)]
     fn miners_per_mine() -> i64 {
         10
@@ -246,52 +299,12 @@ pub trait Mining {
         })
         .join("\n")
     }
-
-    fn resources(&self) -> String {
-        format!(
-            "{} `{}` coal
-        {} `{}` iron
-        {} `{}` gold
-        {} `{}` redstone
-        {} `{}` lapis
-        {} `{}` diamonds
-        {} `{}` emeralds",
-            ShopCurrency::Coal,
-            self.coal().format(),
-            ShopCurrency::Iron,
-            self.iron().format(),
-            ShopCurrency::Gold,
-            self.gold().format(),
-            ShopCurrency::Redstone,
-            self.redstone().format(),
-            ShopCurrency::Lapis,
-            self.lapis().format(),
-            ShopCurrency::Diamonds,
-            self.diamonds().format(),
-            ShopCurrency::Emeralds,
-            self.emeralds().format(),
-        )
-    }
-
-    fn crafted(&self) -> String {
-        format!(
-            "{} `{}` tech packs
-            {} `{}` utility packs
-            {} `{}` production packs",
-            ShopCurrency::Tech,
-            self.tech().format(),
-            ShopCurrency::Utility,
-            self.utility().format(),
-            ShopCurrency::Production,
-            self.production().format()
-        )
-    }
 }
 
-pub trait MineHourly {
-    fn miners(&self) -> i64;
+impl<T: Mining + Prestige> MaxValues for T {}
 
-    fn prestige(&self) -> i64;
+pub trait MineHourly: Prestige {
+    fn miners(&self) -> i64;
 
     fn hourly(&self) -> i64 {
         let miners = self.miners();
@@ -300,26 +313,17 @@ pub trait MineHourly {
             return 0;
         }
 
-        // const BASE_EXPONENT: f64 = 0.9;
-        // const SCALING_CONST: f64 = 20.0;
-
-        // let base_value = (miners as f64).powf(BASE_EXPONENT) * SCALING_CONST;
-        let prestige_multiplier = 1.0 + 0.01 * self.prestige() as f64;
-
-        (miners as f64 * prestige_multiplier) as i64
+        (miners * self.prestige_mult_100()) / 100
     }
 }
 
-pub trait MaxBet {
-    fn prestige(&self) -> i64;
-
+pub trait MaxBet: Prestige {
     fn level(&self) -> i32;
 
     fn max_bet(&self) -> i64 {
         let base_amount = (self.level() * 10_000).max(10_000);
-        let prestige_bonus = 10 + self.prestige();
 
-        (base_amount as i64 * prestige_bonus) / 10
+        (base_amount as i64 * self.prestige_mult_10()) / 10
     }
 
     fn max_bet_str(&self) -> String {
@@ -352,3 +356,21 @@ pub trait VerifyBet: Coins + MaxBet {
 }
 
 impl<T: Coins + MaxBet> VerifyBet for T {}
+
+pub trait MineAmount: MineHourly {
+    fn mine_activity(&self) -> NaiveDateTime;
+
+    fn mine_amount(&self) -> i64 {
+        let mine_activity = self.mine_activity();
+
+        let mine_hour = mine_activity
+            .date()
+            .and_hms_opt(mine_activity.hour(), 0, 0)
+            .unwrap()
+            .and_utc();
+
+        let duration = Utc::now() - mine_hour;
+
+        duration.num_hours() * self.hourly()
+    }
+}

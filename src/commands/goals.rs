@@ -4,7 +4,7 @@ use serenity::all::{
 };
 use sqlx::{Database, FromRow, Pool};
 
-use crate::{COIN, Coins, GamblingGoalsRow, Gems, GoalHandler, MaxBet, Result, tomorrow};
+use crate::{COIN, Coins, GamblingGoalsRow, Gems, GoalHandler, MaxBet, Prestige, Result, tomorrow};
 
 use super::Commands;
 
@@ -51,11 +51,13 @@ impl Gems for GoalsRow {
     }
 }
 
-impl MaxBet for GoalsRow {
+impl Prestige for GoalsRow {
     fn prestige(&self) -> i64 {
         self.prestige.unwrap_or_default()
     }
+}
 
+impl MaxBet for GoalsRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }

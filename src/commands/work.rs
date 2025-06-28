@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Timelike, Utc};
+use chrono::{NaiveDateTime, Utc};
 use serenity::all::{
     Colour, CommandInteraction, Context, CreateCommand, CreateEmbed, EditInteractionResponse,
     UserId,
@@ -10,7 +10,10 @@ use sqlx::{Database, Pool};
 use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event};
-use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
+use crate::models::MineAmount;
+use crate::{
+    COIN, Coins, Gems, GoalsManager, MaxBet, MineHourly, Prestige, Result, Stamina, StaminaManager,
+};
 
 use super::Commands;
 
@@ -74,10 +77,6 @@ impl Stamina for WorkRow {
 }
 
 impl MaxBet for WorkRow {
-    fn prestige(&self) -> i64 {
-        self.prestige.unwrap_or_default()
-    }
-
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
@@ -87,11 +86,20 @@ impl MineHourly for WorkRow {
     fn miners(&self) -> i64 {
         self.miners.unwrap_or_default()
     }
+}
 
+impl MineAmount for WorkRow {
+    fn mine_activity(&self) -> NaiveDateTime {
+        self.mine_activity.unwrap_or_else(|| Utc::now().naive_utc())
+    }
+}
+
+impl Prestige for WorkRow {
     fn prestige(&self) -> i64 {
         self.prestige.unwrap_or_default()
     }
 }
+
 #[async_trait]
 pub trait WorkManager<Db: Database> {
     async fn row(pool: &Pool<Db>, id: impl Into<UserId> + Send) -> sqlx::Result<Option<WorkRow>>;
@@ -120,7 +128,7 @@ impl Commands {
         row.verify_work::<Db, StaminaHandler>()?;
 
         let base_amount = rand::random_range(100..=500);
-        let mine_amount = mine_amount(&row);
+        let mine_amount = row.mine_amount();
         let total_amount = base_amount + mine_amount;
 
         *row.coins_mut() += total_amount;
@@ -161,23 +169,4 @@ impl Commands {
     pub fn register_work() -> CreateCommand {
         CreateCommand::new("work").description("Do some work and get some quick coins")
     }
-}
-
-fn mine_amount(row: &WorkRow) -> i64 {
-    let mine_activity = match row.mine_activity {
-        Some(dt) => dt,
-        None => {
-            return 0;
-        }
-    };
-
-    let mine_hour = mine_activity
-        .date()
-        .and_hms_opt(mine_activity.hour(), 0, 0)
-        .unwrap()
-        .and_utc();
-
-    let duration = Utc::now() - mine_hour;
-
-    duration.num_hours() * row.hourly()
 }

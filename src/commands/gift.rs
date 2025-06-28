@@ -8,7 +8,7 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 use zayden_core::FormatNum;
 
 use crate::{
-    Coins, Error, Gems, GoalsManager, MaxBet, Result, START_AMOUNT,
+    Coins, Error, Gems, GoalsManager, MaxBet, Prestige, Result, START_AMOUNT,
     events::{Dispatch, Event, SendEvent},
     tomorrow,
 };
@@ -78,13 +78,15 @@ impl Gems for SenderRow {
     }
 }
 
+impl Prestige for SenderRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
+}
+
 impl MaxBet for SenderRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
-    }
-
-    fn prestige(&self) -> i64 {
-        self.prestige
     }
 }
 

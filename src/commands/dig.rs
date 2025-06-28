@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::LazyLock};
 
 use async_trait::async_trait;
+use chrono::{NaiveDateTime, Utc};
 use rand::rng;
 use rand_distr::{Binomial, Distribution};
 use serenity::all::{
@@ -11,8 +12,9 @@ use sqlx::{Database, Pool, any::AnyQueryResult, prelude::FromRow};
 use zayden_core::FormatNum;
 
 use crate::events::{Dispatch, Event};
+use crate::models::{MineAmount, Prestige};
 use crate::shop::ShopCurrency;
-use crate::{Coins, Gems, GoalsManager, MaxBet, Result, Stamina, StaminaManager};
+use crate::{Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
 
 use super::Commands;
 
@@ -60,6 +62,7 @@ pub struct DigRow {
     pub diamonds: Option<i64>,
     pub emeralds: Option<i64>,
     pub prestige: Option<i64>,
+    pub mine_activity: Option<NaiveDateTime>,
 }
 
 impl DigRow {
@@ -81,6 +84,7 @@ impl DigRow {
             diamonds: Some(0),
             emeralds: Some(0),
             prestige: Some(0),
+            mine_activity: Some(Utc::now().naive_utc()),
         }
     }
 
@@ -137,13 +141,27 @@ impl Stamina for DigRow {
     }
 }
 
+impl Prestige for DigRow {
+    fn prestige(&self) -> i64 {
+        self.prestige.unwrap_or_default()
+    }
+}
+
 impl MaxBet for DigRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
     }
+}
 
-    fn prestige(&self) -> i64 {
-        self.prestige.unwrap_or_default()
+impl MineHourly for DigRow {
+    fn miners(&self) -> i64 {
+        self.miners.unwrap_or_default()
+    }
+}
+
+impl MineAmount for DigRow {
+    fn mine_activity(&self) -> NaiveDateTime {
+        self.mine_activity.unwrap_or_else(|| Utc::now().naive_utc())
     }
 }
 
@@ -177,11 +195,10 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let prestige_multiplier = 1.0 + 0.01 * row.prestige() as f64;
-        let num_attempts = (row.miners.unwrap_or_default() as f64 * prestige_multiplier) as u64;
+        let num_attempts = (row.miners() * row.prestige_mult_100()) / 100;
 
         for (&resource, chance) in CHANCES.iter() {
-            let ore = Binomial::new(num_attempts, chance * 25.0)
+            let ore = Binomial::new(num_attempts as u64, chance * 25.0)
                 .unwrap()
                 .sample(&mut rng()) as i64;
 
@@ -211,36 +228,43 @@ impl Commands {
 
         let stamina = row.stamina_str();
 
+        let mine_amount = row.mine_amount();
+
         DigHandler::save(pool, row).await.unwrap();
+
+        let found = resources
+            .drain()
+            .filter(|(_, v)| *v > 0)
+            .map(|(k, v)| match k {
+                "coal" => (ShopCurrency::Coal, v, k),
+                "iron" => (ShopCurrency::Iron, v, k),
+                "gold" => (ShopCurrency::Gold, v, k),
+                "redstone" => (ShopCurrency::Redstone, v, k),
+                "lapis" => (ShopCurrency::Lapis, v, k),
+                "diamonds" => (ShopCurrency::Diamonds, v, k),
+                "emeralds" => (ShopCurrency::Emeralds, v, k),
+                s => unreachable!("Invalid resource: {s}"),
+            })
+            .map(|(currency, amount, name)| format!("{currency} `{}` {name}", amount.format()))
+            .collect::<Vec<_>>();
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "You dug around in the mines and found:\n{}\nStamina: {stamina}",
+                "You dug around in the mines and found:\n{}{}\nStamina: {stamina}",
                 {
-                    let found = resources
-                        .drain()
-                        .filter(|(_, v)| *v > 0)
-                        .map(|(k, v)| match k {
-                            "coal" => (ShopCurrency::Coal, v, k),
-                            "iron" => (ShopCurrency::Iron, v, k),
-                            "gold" => (ShopCurrency::Gold, v, k),
-                            "redstone" => (ShopCurrency::Redstone, v, k),
-                            "lapis" => (ShopCurrency::Lapis, v, k),
-                            "diamonds" => (ShopCurrency::Diamonds, v, k),
-                            "emeralds" => (ShopCurrency::Emeralds, v, k),
-                            s => unreachable!("Invalid resource: {s}"),
-                        })
-                        .map(|(currency, amount, name)| {
-                            format!("{currency} `{}` {name}", amount.format())
-                        })
-                        .collect::<Vec<_>>();
-
                     if found.is_empty() {
                         String::from("Just a whole lot of boring stone...")
                     } else {
                         found.join("\n")
                     }
                 },
+                {
+                    if mine_amount == 0 {
+                        String::new()
+                    } else {
+                        format!("\nWhile you were away your mine made: `{}`", mine_amount)
+                    }
+                }
             ))
             .color(Colour::GOLD);
 

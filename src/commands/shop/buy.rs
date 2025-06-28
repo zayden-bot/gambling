@@ -5,8 +5,8 @@ use sqlx::{Database, Pool, prelude::FromRow, types::Json};
 use zayden_core::{FormatNum, parse_options};
 
 use crate::{
-    Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, Result, SHOP_ITEMS, SUPER_USER,
-    ShopCurrency, ShopItem, ShopPage,
+    Coins, Error, Gems, GoalsManager, ItemInventory, MaxBet, MaxValues, Prestige, Result,
+    SHOP_ITEMS, SUPER_USER, ShopCurrency, ShopItem, ShopPage,
     commands::shop::ShopManager,
     events::{Dispatch, Event, ShopPurchaseEvent},
     models::{GamblingItem, Mining},
@@ -131,10 +131,6 @@ impl Mining for BuyRow {
         self.universes
     }
 
-    fn prestige(&self) -> i64 {
-        self.prestige
-    }
-
     fn tech(&self) -> i64 {
         self.tech
     }
@@ -176,13 +172,15 @@ impl Mining for BuyRow {
     }
 }
 
+impl Prestige for BuyRow {
+    fn prestige(&self) -> i64 {
+        self.prestige
+    }
+}
+
 impl MaxBet for BuyRow {
     fn level(&self) -> i32 {
         self.level.unwrap_or_default()
-    }
-
-    fn prestige(&self) -> i64 {
-        self.prestige
     }
 }
 
