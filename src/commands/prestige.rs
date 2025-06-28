@@ -61,7 +61,7 @@ impl PrestigeRow {
             todo!()
         } else {
             Self::continents_per_plant()
-                * (Self::countries_per_continent() + 5)
+                * Self::countries_per_continent()
                 * (Self::land_per_country() + 5)
                 * (Self::mines_per_land() + 5)
                 * (Self::miners_per_mine() + 5)
