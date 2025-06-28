@@ -14,7 +14,7 @@ use zayden_core::FormatNum;
 use crate::events::{Dispatch, Event};
 use crate::models::{MineAmount, Prestige};
 use crate::shop::ShopCurrency;
-use crate::{Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
+use crate::{COIN, Coins, Gems, GoalsManager, MaxBet, MineHourly, Result, Stamina, StaminaManager};
 
 use super::Commands;
 
@@ -250,7 +250,7 @@ impl Commands {
 
         let embed = CreateEmbed::new()
             .description(format!(
-                "You dug around in the mines and found:\n{}{}\nStamina: {stamina}",
+                "You dug around in the mines and found:\n{}{}\n\nStamina: {stamina}",
                 {
                     if found.is_empty() {
                         String::from("Just a whole lot of boring stone...")
@@ -262,7 +262,7 @@ impl Commands {
                     if mine_amount == 0 {
                         String::new()
                     } else {
-                        format!("\nWhile you were away your mine made: `{}`", mine_amount)
+                        format!("\nCollected {} <:coin:{COIN}>", mine_amount.format())
                     }
                 }
             ))
