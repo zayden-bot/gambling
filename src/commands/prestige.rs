@@ -57,16 +57,14 @@ pub struct PrestigeRow {
 
 impl PrestigeRow {
     pub fn req_miners(&self) -> i64 {
-        let max_values = self.max_values();
-
         if self.prestige() > 10 {
             todo!()
         } else {
-            2 * max_values.get("continent").unwrap()
-                * max_values.get("country").unwrap()
-                * max_values.get("land").unwrap()
-                * max_values.get("mine").unwrap()
-                * max_values.get("miner").unwrap()
+            2 * Self::continents_per_plant()
+                * Self::countries_per_continent()
+                * Self::land_per_country()
+                * Self::mines_per_land()
+                * Self::miners_per_mine()
         }
     }
 

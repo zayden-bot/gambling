@@ -144,39 +144,70 @@ pub trait Mining {
 
     fn emeralds(&self) -> i64;
 
-    fn max_values(&self) -> HashMap<&str, i64> {
-        const MAX_MINERS_PER_MINE: u8 = 10;
-        const MAX_MINES_PER_LAND: u8 = 5;
-        const MAX_LAND_PER_COUNTRY: u8 = 15;
-        const MAX_COUNTRIES_PER_CONTINENT: u8 = 25;
-        const MAX_CONTINENTS_PER_PLANT: u8 = 7;
-        const MAX_PLANTS_PER_SOLAR_SYSTEM: u8 = 8;
-        const MAX_SOLAR_SYSTEM_PER_GALAXIES: u8 = 50;
-        const MAX_GALAXIES_PER_UNIVERSE: u8 = 100;
+    #[inline(always)]
+    fn miners_per_mine() -> i64 {
+        10
+    }
 
+    #[inline(always)]
+    fn mines_per_land() -> i64 {
+        5
+    }
+
+    #[inline(always)]
+    fn land_per_country() -> i64 {
+        15
+    }
+
+    #[inline(always)]
+    fn countries_per_continent() -> i64 {
+        25
+    }
+
+    #[inline(always)]
+    fn continents_per_plant() -> i64 {
+        7
+    }
+
+    #[inline(always)]
+    fn plants_per_solar_system() -> i64 {
+        8
+    }
+
+    #[inline(always)]
+    fn solar_system_per_galaxies() -> i64 {
+        50
+    }
+
+    #[inline(always)]
+    fn galaxies_per_universe() -> i64 {
+        100
+    }
+
+    fn max_values(&self) -> HashMap<&str, i64> {
         HashMap::from([
-            ("miner", MAX_MINERS_PER_MINE as i64 * (self.mines() + 1)),
-            ("mine", MAX_MINES_PER_LAND as i64 * (self.land() + 1)),
-            ("land", MAX_LAND_PER_COUNTRY as i64 * (self.countries() + 1)),
+            ("miner", Self::miners_per_mine() * (self.mines() + 1)),
+            ("mine", Self::mines_per_land() * (self.land() + 1)),
+            ("land", Self::land_per_country() * (self.countries() + 1)),
             (
                 "country",
-                MAX_COUNTRIES_PER_CONTINENT as i64 * (self.continents() + 1),
+                Self::countries_per_continent() * (self.continents() + 1),
             ),
             (
                 "continent",
-                MAX_CONTINENTS_PER_PLANT as i64 * (self.planets() + 1),
+                Self::continents_per_plant() * (self.planets() + 1),
             ),
             (
                 "planet",
-                MAX_PLANTS_PER_SOLAR_SYSTEM as i64 * (self.solar_systems() + 1),
+                Self::plants_per_solar_system() * (self.solar_systems() + 1),
             ),
             (
                 "solar_system",
-                MAX_SOLAR_SYSTEM_PER_GALAXIES as i64 * (self.galaxies() + 1),
+                Self::solar_system_per_galaxies() * (self.galaxies() + 1),
             ),
             (
                 "galaxy",
-                MAX_GALAXIES_PER_UNIVERSE as i64 * (self.universes() + 1),
+                Self::galaxies_per_universe() * (self.universes() + 1),
             ),
             ("universe", self.prestige() + 1),
         ])
