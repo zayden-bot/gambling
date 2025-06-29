@@ -427,7 +427,7 @@ const MINE: ShopItem = ShopItem::new(
     "Mine",
     Emoji::None,
     "Allows you to hire 10 extra miners per mine",
-    MINER.cost[0].unwrap().0 * 10,
+    MINER.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine1,
 )
@@ -438,7 +438,7 @@ const LAND: ShopItem = ShopItem::new(
     "Land",
     Emoji::None,
     "Allows you to buy 5 extra mines per land",
-    MINE.cost[0].unwrap().0 * 10,
+    MINE.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine1,
 )
@@ -449,7 +449,7 @@ const COUNTRY: ShopItem = ShopItem::new(
     "Country",
     Emoji::None,
     "Allows you to buy 25 extra plots of land per country",
-    LAND.cost[0].unwrap().0 * 10,
+    LAND.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine1,
 )
@@ -461,7 +461,7 @@ const CONTINENT: ShopItem = ShopItem::new(
     "Continent",
     Emoji::None,
     "Allows you to buy 50 extra countries per continent",
-    COUNTRY.cost[0].unwrap().0 * 10,
+    COUNTRY.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine1,
 )
@@ -474,7 +474,7 @@ const PLANET: ShopItem = ShopItem::new(
     "Planet",
     Emoji::None,
     "Allows you to buy 7 extra continents per planet",
-    CONTINENT.cost[0].unwrap().0 * 10,
+    CONTINENT.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine2,
 )
@@ -487,7 +487,7 @@ const SOLAR_SYSTEM: ShopItem = ShopItem::new(
     "Solar System",
     Emoji::None,
     "Allows you to buy 8 extra planets per solar system",
-    PLANET.cost[0].unwrap().0 * 10,
+    PLANET.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine2,
 )
@@ -500,7 +500,7 @@ const GALAXY: ShopItem = ShopItem::new(
     "Galaxy",
     Emoji::None,
     "Allows you to buy 100 extra planets per solar system",
-    SOLAR_SYSTEM.cost[0].unwrap().0 * 10,
+    SOLAR_SYSTEM.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine2,
 )
@@ -513,7 +513,7 @@ const UNIVERSE: ShopItem = ShopItem::new(
     "Universe",
     Emoji::None,
     "Allows you to buy 255 extra galaxies per universe",
-    GALAXY.cost[0].unwrap().0 * 10,
+    GALAXY.cost[0].unwrap().0 * 5,
     ShopCurrency::Coins,
     ShopPage::Mine2,
 )
