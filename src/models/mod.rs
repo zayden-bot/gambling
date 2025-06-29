@@ -204,7 +204,7 @@ pub trait MaxValues: Mining + Prestige {
 
     #[inline(always)]
     fn mines_per_land() -> i64 {
-        5
+        10
     }
 
     #[inline(always)]
@@ -219,12 +219,12 @@ pub trait MaxValues: Mining + Prestige {
 
     #[inline(always)]
     fn continents_per_plant() -> i64 {
-        7
+        10
     }
 
     #[inline(always)]
     fn plants_per_solar_system() -> i64 {
-        8
+        10
     }
 
     #[inline(always)]
