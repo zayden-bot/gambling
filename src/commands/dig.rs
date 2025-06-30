@@ -195,10 +195,15 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        let num_attempts = (row.miners() * row.prestige_mult_100()) / 100;
+        const EARLY_GAME_BOOST_FACTOR: f64 = 10.0;
+
+        let miners = row.miners();
+        let linear_component = miners * row.prestige_mult_100() / 100;
+        let bonus_component = (miners as f64).max(0.0).sqrt() * EARLY_GAME_BOOST_FACTOR;
+        let num_attempts = (linear_component as f64 + bonus_component) as u64;
 
         for (&resource, chance) in CHANCES.iter() {
-            let ore = Binomial::new(num_attempts as u64, chance * 25.0)
+            let ore = Binomial::new(num_attempts, (chance * 25.0).min(1.0))
                 .unwrap()
                 .sample(&mut rng()) as i64;
 
