@@ -209,12 +209,12 @@ pub trait MaxValues: Mining + Prestige {
 
     #[inline(always)]
     fn land_per_country() -> i64 {
-        15
+        10
     }
 
     #[inline(always)]
     fn countries_per_continent() -> i64 {
-        25
+        10
     }
 
     #[inline(always)]
