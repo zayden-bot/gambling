@@ -195,7 +195,7 @@ impl Commands {
             ("emeralds", 0),
         ]);
 
-        const EARLY_GAME_BOOST_FACTOR: f64 = 10.0;
+        const EARLY_GAME_BOOST_FACTOR: f64 = 5.0;
 
         let miners = row.miners();
         let linear_component = miners * row.prestige_mult_100() / 100;
